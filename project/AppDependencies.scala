@@ -20,5 +20,7 @@ object AppDependencies {
     "org.mockito"             % "mockito-all"                 % "1.10.19"                   % Test
   )
 
-  val it = Seq.empty
+  val it = Seq(
+    "org.mockito"             % "mockito-all"                 % "1.10.19"                   % Test
+  )
 }
