@@ -17,6 +17,8 @@
 package services
 
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.getFinancialDetails._
 import models.getFinancialDetails.totalisation._
 import play.api.http.Status
@@ -33,6 +35,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
       s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" +
       s"&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}"
   }
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
 
   "getFinancialDetails" when {
 
@@ -52,7 +55,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
 
     "call the connector and return a successful result" in {
       mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam", Some(getFinancialDetailsAsJson.toString()))
-      val result = await(service.getFinancialDetails("123456789", None))
+      val result = await(service.getFinancialDetails(vrn123456789, None))
       result.isRight shouldBe true
       result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
     }
@@ -60,7 +63,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
     "call the connector and return a successful result - passing custom parameters when defined" in {
       mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?foo=bar&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}",
         Some(getFinancialDetailsAsJson.toString()))
-      val result = await(service.getFinancialDetails("123456789", Some("?foo=bar")))
+      val result = await(service.getFinancialDetails(vrn123456789, Some("?foo=bar")))
       result.isRight shouldBe true
       result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
     }
@@ -76,7 +79,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
            ]
           }
           """))
-      val result = await(service.getFinancialDetails("123456789", None))
+      val result = await(service.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
     }
@@ -94,14 +97,14 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
           |}
           |""".stripMargin
       mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?$financialDataQueryParam", Some(noDataFoundBody))
-      val result = await(service.getFinancialDetails("123456789", None))
+      val result = await(service.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
       mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"VRN/123456789/VATC?$financialDataQueryParam")
-      val result = await(service.getFinancialDetails("123456789", None))
+      val result = await(service.getFinancialDetails(vrn123456789, None))
       result.isLeft shouldBe true
       result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
     }

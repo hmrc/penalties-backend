@@ -21,6 +21,7 @@ import config.featureSwitches.FeatureSwitching
 import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
+import models.EnrolmentKey
 import models.appeals.AppealTypeEnum._
 import models.appeals._
 import models.appeals.reasonableExcuses.ReasonableExcuse
@@ -38,7 +39,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
-import utils.{PagerDutyHelper, PenaltyPeriodHelper, RegimeHelper}
+import utils.{PagerDutyHelper, PenaltyPeriodHelper}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -52,12 +53,12 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                                   cc: ControllerComponents)(implicit ec: ExecutionContext, val config: Configuration)
   extends BackendController(cc) with FeatureSwitching {
 
-  private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: String,
+  private def getAppealDataForPenalty(penaltyId: String, enrolmentKey: EnrolmentKey,
                                       penaltyType: AppealTypeEnum.Value)(implicit hc: HeaderCarrier): Future[Result] = {
-    val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
-    getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
+    //val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
+    getPenaltyDetailsService.getDataFromPenaltyService(enrolmentKey).map {
       _.fold(
-        handleFailureResponse(_, vrn, enrolmentKey)("getAppealDataForPenalty"),
+        handleFailureResponse(_, enrolmentKey)("getAppealDataForPenalty"),
         success => {
           checkAndReturnResponseForPenaltyData(success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails, penaltyId, enrolmentKey, penaltyType)
         }
@@ -65,13 +66,13 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
+  def getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: EnrolmentKey): Action[AnyContent] = Action.async {
     implicit request => {
       getAppealDataForPenalty(penaltyId, enrolmentKey, Late_Submission)
     }
   }
 
-  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean): Action[AnyContent] = Action.async {
+  def getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: EnrolmentKey, isAdditional: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
       getAppealDataForPenalty(penaltyId, enrolmentKey, if (isAdditional) Additional else Late_Payment)
     }
@@ -79,7 +80,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
 
   private def checkAndReturnResponseForPenaltyData(penaltyDetails: GetPenaltyDetails,
                                                    penaltyIdToCheck: String,
-                                                   enrolmentKey: String,
+                                                   enrolmentKey: EnrolmentKey,
                                                    appealType: AppealTypeEnum.Value): Result = {
     val lspPenaltyIdInPenaltyDetailsPayload: Option[LSPDetails] = penaltyDetails.lateSubmissionPenalty.flatMap {
       _.details.find(_.penaltyNumber == penaltyIdToCheck)
@@ -121,7 +122,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     Ok(ReasonableExcuse.allExcusesToJson(appConfig))
   }
 
-  def submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = Action.async {
+  def submitAppeal(enrolmentKey: EnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
       request.body.asJson.fold({
         logger.error(s"[AppealsController][submitAppeal] Unable to submit appel for user with enrolment: $enrolmentKey penalty $penaltyNumber - Failed to validate request body as JSON")
@@ -148,7 +149,7 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: String,
+  private def submitAppealToPEGA(appealSubmission: AppealSubmission, enrolmentKey: EnrolmentKey,
                                  isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean)
                                 (implicit hc: HeaderCarrier, request: Request[_]): Future[AppealSubmissionResponseModel] = {
     appealService.submitAppeal(appealSubmission, enrolmentKey, isLPP, penaltyNumber, correlationId).flatMap {
@@ -211,12 +212,11 @@ class AppealsController @Inject()(val appConfig: AppConfig,
 
   }
 
-  def getMultiplePenaltyData(penaltyId: String, enrolmentKey: String): Action[AnyContent] = Action.async {
+  def getMultiplePenaltyData(penaltyId: String, enrolmentKey: EnrolmentKey): Action[AnyContent] = Action.async {
     implicit request => {
-      val vrn = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
-      getPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(vrn).map {
+      getPenaltyDetailsService.getDataFromPenaltyService(enrolmentKey).map {
         _.fold(
-          handleFailureResponse(_, vrn, enrolmentKey)("getMultiplePenaltyData"),
+          handleFailureResponse(_, enrolmentKey)("getMultiplePenaltyData"),
           success => {
             val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
             val multiplePenaltiesData: Option[MultiplePenaltiesData] = appealService.findMultiplePenalties(penaltyDetails, penaltyId)
@@ -227,25 +227,24 @@ class AppealsController @Inject()(val appConfig: AppConfig,
     }
   }
 
-  private def handleFailureResponse(response: GetPenaltyDetailsParser.GetPenaltyDetailsFailure,
-                                    vrn: String, enrolmentKey: String)(callingMethod: String): Result = {
+  private def handleFailureResponse(response: GetPenaltyDetailsParser.GetPenaltyDetailsFailure, enrolmentKey: EnrolmentKey)(callingMethod: String): Result = {
     response match {
       case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
         logger.info(s"[AppealsController][$callingMethod] - 1812 call returned 404 for enrolment key: $enrolmentKey")
-        NotFound(s"A downstream call returned 404 for VRN: $vrn")
+        NotFound(s"A downstream call returned 404 for ${enrolmentKey.info}")
       }
       case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-        logger.error(s"[AppealsController][$callingMethod] - 1812 call returned an unexpected status: $status for VRN: $vrn")
+        logger.error(s"[AppealsController][$callingMethod] - 1812 call returned an unexpected status: $status for ${enrolmentKey.info}")
         InternalServerError(s"A downstream call returned an unexpected status: $status")
       }
       case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
         PagerDutyHelper.log(callingMethod, MALFORMED_RESPONSE_FROM_1812_API)
-        logger.error(s"[AppealsController][$callingMethod] - Failed to parse penalty details response for VRN: $vrn")
+        logger.error(s"[AppealsController][$callingMethod] - Failed to parse penalty details response for ${enrolmentKey.info}")
         InternalServerError("We were unable to parse penalty data.")
       }
       case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
-        logger.info(s"s[AppealsController][$callingMethod] - 1812 call returned no content for VRN: $vrn")
-        InternalServerError(s"Returned no content for VRN: $vrn")
+        logger.info(s"s[AppealsController][$callingMethod] - 1812 call returned no content for ${enrolmentKey.info}")
+        InternalServerError(s"Returned no content for ${enrolmentKey.info}")
       }
     }
   }

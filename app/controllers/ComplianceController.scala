@@ -16,6 +16,9 @@
 
 package controllers
 
+import models.EnrolmentKey
+import models.EnrolmentKey.{UTR, VRN}
+import models.TaxRegime.{CT, VAT}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.ComplianceService
@@ -28,13 +31,35 @@ import scala.concurrent.ExecutionContext
 class ComplianceController @Inject()(complianceService: ComplianceService,
                                      cc: ControllerComponents)(implicit ec: ExecutionContext) extends BackendController(cc) {
 
-  def getComplianceData(vrn: String, fromDate: String, toDate: String): Action[AnyContent] = Action.async {
+  def redirectLegacyGetComplianceData(vrn: String, fromDate: String, toDate: String): Action[AnyContent] = Action {
+    Redirect(routes.ComplianceController.getVatComplianceData(vrn, fromDate, toDate))
+  }
+
+  def getVatComplianceData(vrn: String, fromDate: String, toDate: String): Action[AnyContent] =
+    EnrolmentKey(VAT, VRN, vrn) match {
+      case Some(key) => getComplianceData(key, fromDate, toDate)
+      case None => Action { BadRequest }
+    }
+
+  def getItsaComplianceData(utr: String, fromDate: String, toDate: String): Action[AnyContent] =
+    EnrolmentKey(VAT, UTR, utr) match {
+      case Some(key) => getComplianceData(key, fromDate, toDate)
+      case None => Action { BadRequest }
+    }
+
+  def getCtComplianceData(utr: String, fromDate: String, toDate: String): Action[AnyContent] =
+    EnrolmentKey(CT, UTR, utr) match {
+      case Some(key) => getComplianceData(key, fromDate, toDate)
+      case None => Action { BadRequest }
+    }
+
+  private def getComplianceData(enrolmentKey: EnrolmentKey, fromDate: String, toDate: String): Action[AnyContent] = Action.async {
     implicit request => {
-      complianceService.getComplianceData(vrn, fromDate, toDate).map {
+      complianceService.getComplianceData(enrolmentKey, fromDate, toDate).map {
         _.fold(
           error => Status(error),
           model => {
-            logger.info(s"[ComplianceController][getComplianceData] - 1330 call returned 200 for VRN: $vrn")
+            logger.info(s"[ComplianceController][getComplianceData] - 1330 call returned 200 for ${enrolmentKey.info}")
             Ok(Json.toJson(model))
           }
         )

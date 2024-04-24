@@ -17,6 +17,7 @@
 package connectors
 
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
+import models.EnrolmentKey
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
 import play.api.test.Helpers._
@@ -56,7 +57,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~1234567890", isLPP = false, penaltyNumber = "1234567890", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, EnrolmentKey("HMRC-MTD-VAT~VRN~1234567890"), isLPP = false, penaltyNumber = "1234567890", correlationId))
       result.isRight shouldBe true
     }
 
@@ -82,7 +83,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId))
       result.isRight shouldBe true
     }
 
@@ -108,7 +109,7 @@ class PEGAConnectorISpec extends IntegrationSpecCommonBase with AppealWiremock w
           isClientResponsibleForLateSubmission = None
         )
       )
-      val result = await(connector.submitAppeal(modelToSend, "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "123456789", correlationId))
+      val result = await(connector.submitAppeal(modelToSend, EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = true, penaltyNumber = "123456789", correlationId))
       result.isRight shouldBe true
     }
   }

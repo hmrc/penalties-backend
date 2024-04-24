@@ -17,6 +17,8 @@
 package services
 
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
@@ -32,6 +34,8 @@ import java.time.LocalDate
 
 class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
   val service: GetPenaltyDetailsService = injector.instanceOf[GetPenaltyDetailsService]
+
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
 
   "getDataFromPenaltyServiceForVATCVRN" when {
     val getPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
@@ -142,7 +146,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
 
     s"call the connector and return a successful result" in {
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789")
-      val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      val result = await(service.getDataFromPenaltyService(vrn123456789))
       result.isRight shouldBe true
       result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(getPenaltyDetailsModel)
     }
@@ -155,7 +159,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
              }
            }
           """))
-      val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      val result = await(service.getDataFromPenaltyService(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsMalformed
     }
@@ -173,14 +177,14 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
           |}
           |""".stripMargin
       mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, "123456789", body = Some(noDataFoundBody))
-      val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      val result = await(service.getDataFromPenaltyService(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
     }
 
     s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
       mockStubResponseForGetPenaltyDetails(Status.IM_A_TEAPOT, "123456789")
-      val result = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      val result = await(service.getDataFromPenaltyService(vrn123456789))
       result.isLeft shouldBe true
       result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(Status.IM_A_TEAPOT)
     }

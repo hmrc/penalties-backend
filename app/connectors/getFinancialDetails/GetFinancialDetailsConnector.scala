@@ -18,6 +18,9 @@ package connectors.getFinancialDetails
 
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsResponse}
+import models.EnrolmentKey
+import models.EnrolmentKey.{UTR, VRN}
+import models.TaxRegime.{CT, ITSA, VAT}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
@@ -39,11 +42,10 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
     "Environment" -> appConfig.eisEnvironment
   )
 
-
-  def getFinancialDetails(vrn: String, overridingParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
+  def getFinancialDetails(enrolmentKey: EnrolmentKey, overridingParameters: Option[String])(implicit hc: HeaderCarrier): Future[GetFinancialDetailsResponse] = {
     val parameters = overridingParameters.fold(appConfig.queryParametersForGetFinancialDetails + appConfig.addDateRangeQueryParameters())(_ + appConfig.addDateRangeQueryParameters())
     httpClient.GET[GetFinancialDetailsResponse](url =
-      appConfig.getFinancialDetailsUrl(vrn) + parameters, headers = headers).recover {
+      getFinancialDetailsUrl(enrolmentKey) + parameters, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("getFinancialDetails", e.statusCode)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
         logger.error(s"[GetFinancialDetailsConnector][getFinancialDetails] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
@@ -57,7 +59,14 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
     }
   }
 
-  def getFinancialDetailsForAPI(vrn: String,
+  private def getFinancialDetailsUrl(enrolmentKey: EnrolmentKey) = enrolmentKey match {
+    case EnrolmentKey(VAT, VRN, vrn) => appConfig.getVatFinancialDetailsUrl(vrn)
+    case EnrolmentKey(ITSA, UTR, utr) => appConfig.getItsaFinancialDetailsUrl(utr)
+    case EnrolmentKey(CT, UTR, utr) => appConfig.getCtFinancialDetailsUrl(utr)
+    case _ => throw new Exception(s"No getFinancialDetails URL available for $enrolmentKey")
+  }
+
+  def getFinancialDetailsForAPI(enrolmentKey: EnrolmentKey,
                                 searchType: Option[String],
                                 searchItem: Option[String],
                                 dateType: Option[String],
@@ -74,7 +83,7 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
     val params = Seq("searchType" -> searchType, "searchItem" -> searchItem, "dateType" -> dateType, "dateFrom" -> dateFrom, "dateTo" -> dateTo, "includeClearedItems" -> includeClearedItems, "includeStatisticalItems" -> includeStatisticalItems, "includePaymentOnAccount" -> includePaymentOnAccount, "addRegimeTotalisation" -> addRegimeTotalisation,
       "addLockInformation" -> addLockInformation, "addPenaltyDetails" -> addPenaltyDetails, "addPostedInterestDetails" -> addPostedInterestDetails, "addAccruingInterestDetails" -> addAccruingInterestDetails)
     val queryParams: String = params.foldLeft("?")((prevString, paramToValue) => prevString + paramToValue._2.fold("")(param => s"${paramToValue._1}=$param&")).dropRight(1)
-    httpClient.GET[HttpResponse](appConfig.getFinancialDetailsUrl(vrn) + queryParams, headers = headers).recover {
+    httpClient.GET[HttpResponse](getFinancialDetailsUrl(enrolmentKey) + queryParams, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         logger.error(s"[GetFinancialDetailsConnector][getFinancialDetailsForAPI] - Received ${e.statusCode} status from API 1811 call - returning status to caller")
         HttpResponse(e.statusCode, e.message)

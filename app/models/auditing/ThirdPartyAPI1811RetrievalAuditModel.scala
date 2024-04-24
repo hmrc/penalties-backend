@@ -16,12 +16,13 @@
 
 package models.auditing
 
+import models.EnrolmentKey
 import play.api.libs.json.{JsString, JsValue, Json}
 import utils.JsonUtils
 
 import scala.util.Try
 
-case class ThirdPartyAPI1811RetrievalAuditModel(vrn: String,
+case class ThirdPartyAPI1811RetrievalAuditModel(enrolmentKey: EnrolmentKey,
                                            responseCode: Int,
                                            responseBody: String) extends JsonAuditModel with JsonUtils {
 
@@ -30,7 +31,7 @@ case class ThirdPartyAPI1811RetrievalAuditModel(vrn: String,
   val response: JsValue = Try(Json.parse(responseBody)).getOrElse(JsString(responseBody))
 
   override val detail: JsValue = jsonObjNoNulls(
-    "vrn" -> vrn,
+    enrolmentKey.keyType.name.toLowerCase -> enrolmentKey.key,
     "responseCodeSentAPIService" -> responseCode,
     "etmp-response" -> response
   )

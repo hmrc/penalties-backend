@@ -19,6 +19,8 @@ package connectors
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import connectors.parsers.ComplianceParser._
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
@@ -43,6 +45,8 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
     2022, 1, 1, 1, 1, 0)
   val date2: LocalDateTime = LocalDateTime.of(
     2024, 1, 1, 1, 1, 0)
+
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
 
   class Setup {
     reset(mockHttpClient)
@@ -78,7 +82,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
           )
         )
       )
-      when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+      when(mockAppConfig.getVatComplianceDataUrl(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
         .thenReturn("/123456789")
       when(mockAppConfig.eisEnvironment).thenReturn("env")
       when(mockAppConfig.desBearerToken).thenReturn("12345")
@@ -91,7 +95,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
           Matchers.any()))
         .thenReturn(Future.successful(Right(CompliancePayloadSuccessResponse(compliancePayloadAsModel))))
       val result: CompliancePayloadResponse =
-        await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+        await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31")(HeaderCarrier()))
       result.isRight shouldBe true
       result.toOption.get.asInstanceOf[CompliancePayloadSuccessResponse] shouldBe CompliancePayloadSuccessResponse(compliancePayloadAsModel)
       headersArgumentCaptor.getValue.find(_._1 == "Authorization").get._2 shouldBe "Bearer 12345"
@@ -100,7 +104,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
 
     "return a Left response" when {
       "the call returns a OK response however the body is not parsable as a model" in new Setup {
-        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+        when(mockAppConfig.getVatComplianceDataUrl(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
@@ -112,12 +116,12 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
             Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadMalformed)))
         val result: CompliancePayloadResponse =
-          await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+          await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
       "the call returns a Not Found status" in new Setup {
-        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+        when(mockAppConfig.getVatComplianceDataUrl(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
@@ -129,12 +133,12 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
             Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadNoData)))
         val result: CompliancePayloadResponse =
-          await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+          await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
       "the call returns a ISE" in new Setup {
-        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+        when(mockAppConfig.getVatComplianceDataUrl(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
@@ -146,12 +150,12 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
             Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))))
         val result: CompliancePayloadResponse =
-          await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+          await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
       "the call returns an unmatched response" in new Setup {
-        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+        when(mockAppConfig.getVatComplianceDataUrl(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
@@ -163,12 +167,12 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
             Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadFailureResponse(SERVICE_UNAVAILABLE))))
         val result: CompliancePayloadResponse =
-          await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+          await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31")(HeaderCarrier()))
         result.isLeft shouldBe true
       }
 
       "the call returns a UpstreamErrorResponse(4xx) exception" in new Setup {
-        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+        when(mockAppConfig.getVatComplianceDataUrl(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
@@ -182,7 +186,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
         withCaptureOfLoggingFrom(logger) {
           logs => {
             val result: CompliancePayloadResponse =
-              await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+              await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31")(HeaderCarrier()))
             logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1330_API.toString)) shouldBe true
             result.isLeft shouldBe true
           }
@@ -190,7 +194,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
       }
 
       "the call returns a UpstreamErrorResponse(5xx) exception" in new Setup {
-        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+        when(mockAppConfig.getVatComplianceDataUrl(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
@@ -204,7 +208,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
         withCaptureOfLoggingFrom(logger) {
           logs => {
             val result: CompliancePayloadResponse =
-              await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+              await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31")(HeaderCarrier()))
             logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1330_API.toString)) shouldBe true
             result.isLeft shouldBe true
           }
@@ -212,7 +216,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
       }
 
       "the call returns an exception" in new Setup {
-        when(mockAppConfig.getComplianceData(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
+        when(mockAppConfig.getVatComplianceDataUrl(Matchers.eq("123456789"), Matchers.any(), Matchers.any()))
           .thenReturn("/123456789")
         when(mockAppConfig.eisEnvironment).thenReturn("env")
         when(mockAppConfig.eiOutboundBearerToken).thenReturn("Bearer 12345")
@@ -226,7 +230,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
         withCaptureOfLoggingFrom(logger) {
           logs => {
             val result: CompliancePayloadResponse =
-              await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31")(HeaderCarrier()))
+              await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31")(HeaderCarrier()))
             logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1330_API.toString)) shouldBe true
             result.isLeft shouldBe true
           }

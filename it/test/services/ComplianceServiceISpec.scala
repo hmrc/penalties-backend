@@ -18,6 +18,8 @@ package services
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
 import connectors.parsers.ComplianceParser._
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -31,6 +33,8 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val startOfLogMsg: String = ""
 
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+
   class Setup {
     enableFeatureSwitch(CallDES)
   }
@@ -39,14 +43,14 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
     "return Left(ISE)" when {
       s"the connector returns $CompliancePayloadFailureResponse" in new Setup {
         mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
-        val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+        val result = await(complianceService.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.getOrElse(IM_A_TEAPOT) shouldBe INTERNAL_SERVER_ERROR
       }
 
       s"the connector returns $CompliancePayloadMalformed" in new Setup {
         mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", invalidBody = true)
-        val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+        val result = await(complianceService.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.getOrElse(IM_A_TEAPOT) shouldBe INTERNAL_SERVER_ERROR
       }
@@ -54,7 +58,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
 
     s"return Left(NOT_FOUND) when the connector returns $CompliancePayloadNoData" in new Setup {
       mockResponseForComplianceDataFromDES(NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
-      val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+      val result = await(complianceService.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31"))
       result.isLeft shouldBe true
       result.left.getOrElse(IM_A_TEAPOT) shouldBe NOT_FOUND
     }
@@ -86,7 +90,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
         )
       )
       mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", hasBody = true)
-      val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+      val result = await(complianceService.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
       result.toOption.get shouldBe compliancePayloadAsModel
     }
@@ -196,7 +200,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
           |    }
           |""".stripMargin)
       mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-01", "2020-12-31", hasBody = true, optBody = Some(compliancePayloadAsJson.toString()))
-      val result = await(complianceService.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+      val result = await(complianceService.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
       result.toOption.get shouldBe expectedOrderedModel
     }

@@ -19,6 +19,7 @@ package services
 import config.featureSwitches.FeatureSwitching
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import models.EnrolmentKey
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
@@ -30,29 +31,31 @@ class GetPenaltyDetailsService @Inject()(getPenaltyDetailsConnector: GetPenaltyD
                                          filterService: FilterService)
                                         (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
-  def getDataFromPenaltyServiceForVATCVRN(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
-    val startOfLogMsg: String = "[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN]"
-    getPenaltyDetailsConnector.getPenaltyDetails(vrn).map {
-      handleConnectorResponse(_)(startOfLogMsg, vrn)
+  def getDataFromPenaltyService(enrolmentKey: EnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
+    val startOfLogMsg: String = s"[GetPenaltyDetailsService][getDataFromPenaltyService][${enrolmentKey.regime}]"
+    getPenaltyDetailsConnector.getPenaltyDetails(enrolmentKey).map {
+      handleConnectorResponse(_)(startOfLogMsg, enrolmentKey)
     }
   }
 
   private def handleConnectorResponse(connectorResponse: GetPenaltyDetailsResponse)
-                                     (implicit startOfLogMsg: String, vrn: String): GetPenaltyDetailsResponse = {
+                                     (implicit startOfLogMsg: String, enrolmentKey: EnrolmentKey): GetPenaltyDetailsResponse = {
     connectorResponse match {
       case res@Right(_@GetPenaltyDetailsSuccessResponse(penaltyDetails)) =>
         val callingClass: String = "GetPenaltiesDetailsService"
         val function: String = "handleConnectorResponse"
         logger.debug(s"$startOfLogMsg - Got a success response from the connector. Parsed model: $penaltyDetails")
-        Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)(callingClass, function, vrn), callingClass, function, vrn)))
+        Right(GetPenaltyDetailsSuccessResponse(filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(
+          filterService.filterPenaltiesWith9xAppealStatus(penaltyDetails)(callingClass, function, enrolmentKey), callingClass, function, enrolmentKey)
+        ))
       case res@Left(GetPenaltyDetailsNoContent) =>
         logger.debug(s"$startOfLogMsg - Got a 404 response and no data was found for GetPenaltyDetails call")
         res
       case res@Left(GetPenaltyDetailsMalformed) =>
-        logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for VRN: $vrn")
+        logger.info(s"$startOfLogMsg - Failed to parse HTTP response into model for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
         res
       case res@Left(GetPenaltyDetailsFailureResponse(_)) =>
-        logger.error(s"$startOfLogMsg - Unknown status returned from connector for VRN: $vrn")
+        logger.error(s"$startOfLogMsg - Unknown status returned from connector for ${enrolmentKey.keyType}: ${enrolmentKey.key}")
         res
     }
   }

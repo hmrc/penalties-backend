@@ -19,6 +19,8 @@ package services
 import base.SpecBase
 import connectors.ComplianceConnector
 import connectors.parsers.ComplianceParser._
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.compliance.CompliancePayload
 import org.mockito.Matchers
 import org.mockito.Mockito._
@@ -31,6 +33,7 @@ class ComplianceServiceSpec extends SpecBase {
   val mockComplianceConnector: ComplianceConnector = mock(classOf[ComplianceConnector])
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
 
   class Setup {
     val service = new ComplianceService(mockComplianceConnector)(appConfig.config)
@@ -42,7 +45,7 @@ class ComplianceServiceSpec extends SpecBase {
       s"the failure model returned is $CompliancePayloadFailureResponse" in new Setup {
         when(mockComplianceConnector.getComplianceData(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadFailureResponse(BAD_REQUEST))))
-        val result: Either[Int, CompliancePayload] = await(service.getComplianceData("123456789", "2020-01-31", "2020-12-31"))
+        val result: Either[Int, CompliancePayload] = await(service.getComplianceData(vrn123456789, "2020-01-31", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.getOrElse(IM_A_TEAPOT) shouldBe BAD_REQUEST
       }
@@ -50,7 +53,7 @@ class ComplianceServiceSpec extends SpecBase {
       s"the failure model returned is $CompliancePayloadNoData" in new Setup {
         when(mockComplianceConnector.getComplianceData(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadNoData)))
-        val result: Either[Int, CompliancePayload] = await(service.getComplianceData("123456789", "2020-01-31", "2020-12-31"))
+        val result: Either[Int, CompliancePayload] = await(service.getComplianceData(vrn123456789, "2020-01-31", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.getOrElse(IM_A_TEAPOT) shouldBe NOT_FOUND
       }
@@ -58,7 +61,7 @@ class ComplianceServiceSpec extends SpecBase {
       s"the failure model returned is $CompliancePayloadMalformed" in new Setup {
         when(mockComplianceConnector.getComplianceData(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(Left(CompliancePayloadMalformed)))
-        val result: Either[Int, CompliancePayload] = await(service.getComplianceData("123456789", "2020-01-31", "2020-12-31"))
+        val result: Either[Int, CompliancePayload] = await(service.getComplianceData(vrn123456789, "2020-01-31", "2020-12-31"))
         result.isLeft shouldBe true
         result.left.getOrElse(IM_A_TEAPOT) shouldBe INTERNAL_SERVER_ERROR
       }

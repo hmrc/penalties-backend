@@ -22,6 +22,7 @@ import config.featureSwitches.SanitiseFileName
 import connectors.PEGAConnector
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
+import models.EnrolmentKey
 import models.appeals._
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
@@ -90,7 +91,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
         Matchers.any(), Matchers.any())).thenReturn(Future.successful(Right(appealResponseModel)))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(
-        service.submitAppeal(modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        service.submitAppeal(modelToPassToServer, EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
       result shouldBe Right(appealResponseModel)
     }
 
@@ -100,7 +101,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
         Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))))
 
       val result: Either[AppealsParser.ErrorResponse, AppealResponseModel] = await(service.submitAppeal(
-        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
+        modelToPassToServer, EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId))
       result shouldBe Left(UnexpectedFailure(BAD_GATEWAY, s"Unexpected response, status $BAD_GATEWAY returned"))
     }
 
@@ -109,7 +110,7 @@ class AppealServiceSpec extends SpecBase with LogCapturing {
         Matchers.any(), Matchers.any())).thenReturn(Future.failed(new Exception("Something went wrong")))
 
       val result: Exception = intercept[Exception](await(service.submitAppeal(
-        modelToPassToServer, "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
+        modelToPassToServer, EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "123456789", correlationId = correlationId)))
       result.getMessage shouldBe "Something went wrong"
     }
   }

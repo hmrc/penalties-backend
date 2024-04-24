@@ -18,6 +18,8 @@ package connectors
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
 import connectors.parsers.ComplianceParser._
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import play.api.http.Status
 import play.api.test.Helpers._
@@ -31,6 +33,7 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val testStartDate: LocalDateTime = LocalDateTime.of(2021,1,1, 1,0,0)
   val testEndDate: LocalDateTime = LocalDateTime.of(2021,1,8,1,0,0)
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
 
   class Setup {
     val connector: ComplianceConnector = injector.instanceOf[ComplianceConnector]
@@ -66,7 +69,7 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
         )
       )
       mockResponseForComplianceDataFromDES(Status.OK, "123456789", "2020-01-01", "2020-12-31", hasBody = true)
-      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+      val result: CompliancePayloadResponse = await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
       result.toOption.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
     }
@@ -99,28 +102,28 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
         )
       )
       mockResponseForComplianceDataFromStub(Status.OK, "123456789", "2020-01-01", "2020-12-31")
-      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+      val result: CompliancePayloadResponse = await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31"))
       result.isRight shouldBe true
       result.toOption.get.asInstanceOf[CompliancePayloadSuccessResponse].model shouldBe compliancePayloadAsModel
     }
 
     s"return a $CompliancePayloadNoData when the response status is Not Found (${Status.NOT_FOUND})" in new Setup {
       mockResponseForComplianceDataFromDES(Status.NOT_FOUND, "123456789", "2020-01-01", "2020-12-31")
-      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+      val result: CompliancePayloadResponse = await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31"))
       result.isLeft shouldBe true
       result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadNoData
     }
 
     s"return a $CompliancePayloadFailureResponse when the response status is ISE (${Status.INTERNAL_SERVER_ERROR})" in new Setup {
       mockResponseForComplianceDataFromDES(Status.INTERNAL_SERVER_ERROR, "123456789", "2020-01-01", "2020-12-31")
-      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01", "2020-12-31"))
+      val result: CompliancePayloadResponse = await(connector.getComplianceData(vrn123456789, "2020-01-01", "2020-12-31"))
       result.isLeft shouldBe true
       result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadFailureResponse(Status.INTERNAL_SERVER_ERROR)
     }
 
     s"return a $CompliancePayloadFailureResponse when the response status is unmatched i.e. Gateway Timeout (${Status.SERVICE_UNAVAILABLE})" in new Setup {
       mockResponseForComplianceDataFromDES(Status.SERVICE_UNAVAILABLE,"123456789", "2020-01-01", "2020-12-31")
-      val result: CompliancePayloadResponse = await(connector.getComplianceData("123456789", "2020-01-01","2020-12-31"))
+      val result: CompliancePayloadResponse = await(connector.getComplianceData(vrn123456789, "2020-01-01","2020-12-31"))
       result.isLeft shouldBe true
       result.left.getOrElse(CompliancePayloadFailureResponse(IM_A_TEAPOT)) shouldBe CompliancePayloadFailureResponse(Status.SERVICE_UNAVAILABLE)
     }

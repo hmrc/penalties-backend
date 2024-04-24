@@ -17,6 +17,8 @@
 package models.auditing
 
 import base.{LogCapturing, SpecBase}
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import play.api.http.Status
 import play.api.libs.json.{JsString, JsValue, Json}
 
@@ -29,8 +31,8 @@ class ThirdPartyAPI1811RetrievalAuditModelSpec extends SpecBase with LogCapturin
 
   val sampleJsonResponseString: String = Json.stringify(sampledJsonResponse)
 
-  val modelWithstringifiedJson = ThirdPartyAPI1811RetrievalAuditModel("12345", Status.OK, sampleJsonResponseString)
-  val modelWithStringBody = ThirdPartyAPI1811RetrievalAuditModel("12346", Status.INTERNAL_SERVER_ERROR, "An error occurred")
+  val modelWithstringifiedJson = ThirdPartyAPI1811RetrievalAuditModel(EnrolmentKey(VAT,"123456789").get, Status.OK, sampleJsonResponseString)
+  val modelWithStringBody = ThirdPartyAPI1811RetrievalAuditModel(EnrolmentKey(VAT,"123456780").get, Status.INTERNAL_SERVER_ERROR, "An error occurred")
 
   "ThirdPartyAPI1811RetrievalAuditModel" should {
     "have the correct audit type" in {
@@ -43,13 +45,13 @@ class ThirdPartyAPI1811RetrievalAuditModelSpec extends SpecBase with LogCapturin
 
     "show the correct audit details" when {
       "the correct detail information is present (when the audit has a JSON body)" in {
-        (modelWithstringifiedJson.detail \ "vrn").validate[String].get shouldBe "12345"
+        (modelWithstringifiedJson.detail \ "vrn").validate[String].get shouldBe "123456789"
         (modelWithstringifiedJson.detail \ "responseCodeSentAPIService").validate[Int].get shouldBe Status.OK
         (modelWithstringifiedJson.detail \ "etmp-response").validate[JsValue].get shouldBe sampledJsonResponse
       }
 
       "the correct detail information is present (when the audit has a non-JSON body)" in {
-        (modelWithStringBody.detail \ "vrn").validate[String].get shouldBe "12346"
+        (modelWithStringBody.detail \ "vrn").validate[String].get shouldBe "123456780"
         (modelWithStringBody.detail \ "responseCodeSentAPIService").validate[Int].get shouldBe Status.INTERNAL_SERVER_ERROR
         (modelWithStringBody.detail \ "etmp-response").validate[JsValue].get shouldBe JsString("An error occurred")
       }

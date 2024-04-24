@@ -18,6 +18,7 @@ package connectors
 
 import config.AppConfig
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, AppealSubmissionResponseReads, UnexpectedFailure}
+import models.EnrolmentKey
 import models.appeals.AppealSubmission
 import play.api.http.HeaderNames._
 import play.api.http.MimeTypes
@@ -33,9 +34,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class PEGAConnector @Inject()(httpClient: HttpClient,
                               appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
-  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[AppealSubmissionResponse] = {
+  def submitAppeal(appealSubmission: AppealSubmission, enrolmentKey: EnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String): Future[AppealSubmissionResponse] = {
     implicit val hc: HeaderCarrier = headersForEIS(correlationId, appConfig.eiOutboundBearerToken, appConfig.eisEnvironment)
-    httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getAppealSubmissionURL(enrolmentKey, isLPP, penaltyNumber), appealSubmission, hc.otherHeaders).recover {
+    httpClient.POST[AppealSubmission, AppealSubmissionResponse](appConfig.getAppealSubmissionURL(enrolmentKey.toString, isLPP, penaltyNumber), appealSubmission, hc.otherHeaders).recover {
       case e: UpstreamErrorResponse => {
         PagerDutyHelper.logStatusCode("submitAppeal", e.statusCode)(RECEIVED_4XX_FROM_1808_API, RECEIVED_5XX_FROM_1808_API)
         logger.error(s"[PEGAConnector][submitAppeal] -" +

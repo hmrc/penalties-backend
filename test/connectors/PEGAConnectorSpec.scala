@@ -19,6 +19,7 @@ package connectors
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.{CallPEGA, FeatureSwitching}
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
+import models.EnrolmentKey
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
@@ -78,7 +79,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         )
       )
       val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-        "HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "1234567890", correlationId = "id"))
+        EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = false, penaltyNumber = "1234567890", correlationId = "id"))
       result shouldBe Right(appealResponseModel)
 
       argumentCaptorOtherHeaders.getValue.find(_._1 == "Authorization").get._2 shouldBe "Bearer placeholder"
@@ -116,7 +117,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
         )
       )
       val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-        "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
+        EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
       result shouldBe Right(appealResponseModel)
     }
 
@@ -152,7 +153,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-            "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
+            EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1808_API.toString)) shouldBe true
           result shouldBe Left(UnexpectedFailure(BAD_REQUEST, ""))
         }
@@ -191,7 +192,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-            "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
+            EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1808_API.toString)) shouldBe true
           result shouldBe Left(UnexpectedFailure(INTERNAL_SERVER_ERROR, ""))
         }
@@ -230,7 +231,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: AppealSubmissionResponse = await(connector.submitAppeal(modelToSend,
-            "HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
+            EnrolmentKey("HMRC-MTD-VAT~VRN~123456789"), isLPP = true, penaltyNumber = "1234567890", correlationId = "id"))
           logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1808_API.toString)) shouldBe true
           result shouldBe Left(UnexpectedFailure(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information."))
         }

@@ -16,6 +16,7 @@
 
 package models.auditing
 
+import models.EnrolmentKey
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.AppealStatusEnum
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyStatusEnum, TimeToPay}
@@ -29,8 +30,7 @@ import java.time.LocalDate
 
 case class UserHasPenaltyAuditModel(
                                      penaltyDetails: GetPenaltyDetails,
-                                     identifier: String,
-                                     identifierType: String,
+                                     enrolmentKey: EnrolmentKey,
                                      arn: Option[String],
                                      dateHelper: DateHelper
                                    )(implicit request: Request[_]) extends JsonAuditModel with JsonUtils {
@@ -38,6 +38,7 @@ case class UserHasPenaltyAuditModel(
   override val auditType: String = "PenaltyUserHasPenalty"
   override val transactionName: String = "penalties-user-has-penalty"
 
+  // FIXME: add support for ITSA
   private val callingService: String = request.headers.get("User-Agent") match {
     case Some(x) if x.contains("penalties-frontend") => "penalties-frontend"
     case Some(x) if x.contains("business-tax-account") => "BTA"
@@ -53,6 +54,7 @@ case class UserHasPenaltyAuditModel(
       ""
   }
 
+  // FIXME: find what this should be for ITSA. Perhaps close the world?
   val userType: String = if (arn.isDefined || callingService == "VATVC Agent") "Agent" else "Trader"
 
   private val amountOfLspChargesPaid: Int = penaltyDetails.lateSubmissionPenalty.map(_.details.count(point => point.chargeOutstandingAmount.contains(BigDecimal(0))
@@ -181,8 +183,8 @@ case class UserHasPenaltyAuditModel(
   )
 
   override val detail: JsValue = jsonObjNoNulls(
-    "taxIdentifier" -> identifier,
-    "identifierType" -> identifierType,
+    "taxIdentifier" -> enrolmentKey.key,
+    "identifierType" -> enrolmentKey.keyType.name,
     "agentReferenceNumber" -> arn,
     "userType" -> userType,
     "callingService" -> callingService,

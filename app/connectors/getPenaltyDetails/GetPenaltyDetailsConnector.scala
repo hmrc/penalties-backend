@@ -19,6 +19,9 @@ package connectors.getPenaltyDetails
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
+import models.EnrolmentKey
+import models.EnrolmentKey.{UTR, VRN}
+import models.TaxRegime.{CT, ITSA, VAT}
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -46,8 +49,8 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
     ).filter(_._1.nonEmpty)
   }
 
-  def getPenaltyDetails(vrn: String)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
-    val url = appConfig.getPenaltyDetailsUrl + vrn
+  def getPenaltyDetails(enrolmentKey: EnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
+    val url: String = getPenaltyDetailsUrl(enrolmentKey)
     logger.debug(s"[GetPenaltyDetailsConnector][getPenaltyDetails] - Calling GET $url \nHeaders: $headers")
     httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
       case e: UpstreamErrorResponse => {
@@ -65,9 +68,16 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
     }
   }
 
-  def getPenaltyDetailsForAPI(vrn: String, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  private def getPenaltyDetailsUrl(enrolmentKey: EnrolmentKey) = enrolmentKey match {
+    case EnrolmentKey(VAT, VRN, vrn) => appConfig.getVatPenaltyDetailsUrl + vrn
+    case EnrolmentKey(ITSA, UTR, utr) => appConfig.getItsaPenaltyDetailsUrl + utr
+    case EnrolmentKey(CT, UTR, utr) => appConfig.getCtPenaltyDetailsUrl + utr
+    case _ => throw new Exception(s"No getPenaltyDetails URL available for $enrolmentKey")
+  }
+
+  def getPenaltyDetailsForAPI(enrolmentKey: EnrolmentKey, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
-    httpClient.GET[HttpResponse](appConfig.getPenaltyDetailsUrl + vrn + queryParam, headers = headers).recover {
+    httpClient.GET[HttpResponse](getPenaltyDetailsUrl(enrolmentKey) + queryParam, headers = headers).recover {
       case e: UpstreamErrorResponse => {
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" Received ${e.statusCode} status from API 1812 call - returning status to caller")

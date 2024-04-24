@@ -56,7 +56,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       enableFeatureSwitch(CallAPI1812ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = this.config.getPenaltyDetailsUrl
+      val result: String = this.config.getVatPenaltyDetailsUrl
       result shouldBe "localhost:0000/penalty/details/VATC/VRN/"
     }
 
@@ -64,7 +64,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       disableFeatureSwitch(CallAPI1812ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = this.config.getPenaltyDetailsUrl
+      val result: String = this.config.getVatPenaltyDetailsUrl
       result shouldBe "localhost:0000/penalties-stub/penalty/details/VATC/VRN/"
     }
   }
@@ -74,7 +74,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       enableFeatureSwitch(CallAPI1811ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = this.config.getFinancialDetailsUrl("123456789")
+      val result: String = this.config.getVatFinancialDetailsUrl("123456789")
       result shouldBe "localhost:0000/penalty/financial-data/VRN/123456789/VATC"
     }
 
@@ -82,7 +82,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       disableFeatureSwitch(CallAPI1811ETMP)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = this.config.getFinancialDetailsUrl("123456789")
+      val result: String = this.config.getVatFinancialDetailsUrl("123456789")
       result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/VRN/123456789/VATC"
     }
   }
@@ -118,7 +118,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       disableFeatureSwitch(CallDES)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = this.config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
+      val result: String = this.config.getVatComplianceDataUrl("123456789", "2020-01-01", "2020-12-31")
       result shouldBe "localhost:0000/penalties-stub/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
     }
 
@@ -126,7 +126,7 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
       enableFeatureSwitch(CallDES)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
-      val result: String = this.config.getComplianceData("123456789", "2020-01-01", "2020-12-31")
+      val result: String = this.config.getVatComplianceDataUrl("123456789", "2020-01-01", "2020-12-31")
       result shouldBe "localhost:0000/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
     }
   }

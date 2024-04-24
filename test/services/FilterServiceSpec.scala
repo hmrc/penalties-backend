@@ -19,6 +19,8 @@ package services
 import base.{LPPDetailsBase, LSPDetailsBase, SpecBase}
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.AppealStatusEnum
 import models.getPenaltyDetails.latePayment.LatePaymentPenalty
@@ -46,6 +48,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
   val mockAppConfig: AppConfig = new AppConfig(mockConfig, mockServicesConfig)
   val filterService = new FilterService
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
 
   "tryJsonParseOrJsString" should {
     "return a JsValue when the body can be parsed" in {
@@ -93,7 +96,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.now()))
 
-      val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", "123456789")
+      val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", vrn123456789)
       result shouldBe expectedResult
     }
 
@@ -115,7 +118,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.now()))
 
-      val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", "123456789")
+      val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", vrn123456789)
       result shouldBe expectedResult
     }
 
@@ -140,7 +143,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.now()))
 
-      val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", "123456789")
+      val result = filterService.filterEstimatedLPP1DuringPeriodOfFamiliarisation(penaltiesDetails, "foo", "bar", vrn123456789)
       result shouldBe expectedResult
     }
   }
@@ -175,7 +178,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
         breathingSpace = None
       )
 
-      val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+      val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", vrn123456789)
       result.lateSubmissionPenalty.get.details shouldBe
         expectedResult.lateSubmissionPenalty.get.details
     }
@@ -200,7 +203,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
         breathingSpace = None
       )
 
-      val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+      val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", vrn123456789)
       result.latePaymentPenalty.get.details shouldBe expectedResult.latePaymentPenalty.get.details
     }
   }
@@ -239,7 +242,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       breathingSpace = None
     )
 
-    val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+    val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", vrn123456789)
     result.lateSubmissionPenalty.get.details shouldBe expectedResult.lateSubmissionPenalty.get.details
     result.latePaymentPenalty.get.details shouldBe expectedResult.latePaymentPenalty.get.details
   }
@@ -270,7 +273,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       breathingSpace = None
     )
 
-    val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+    val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", vrn123456789)
     result.lateSubmissionPenalty shouldBe expectedResult.lateSubmissionPenalty
     result.latePaymentPenalty shouldBe expectedResult.latePaymentPenalty
   }
@@ -305,7 +308,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
       breathingSpace = None
     )
 
-    val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", "123456789")
+    val result = filterService.filterPenaltiesWith9xAppealStatus(penaltiesDetails)("foo", "bar", vrn123456789)
     result.lateSubmissionPenalty.get.details shouldBe expectedResult.lateSubmissionPenalty.get.details
     result.latePaymentPenalty.get.details shouldBe expectedResult.latePaymentPenalty.get.details
   }

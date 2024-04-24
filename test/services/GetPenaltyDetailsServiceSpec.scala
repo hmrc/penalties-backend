@@ -37,6 +37,8 @@ import utils.Logger.logger
 
 import java.time.LocalDate
 import config.featureSwitches.FeatureSwitching
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,6 +47,8 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+
   class Setup(withRealConfig: Boolean = true) {
     implicit val mockConfig: Configuration = mock(classOf[Configuration])
     val mockServicesConfig: ServicesConfig = mock(classOf[ServicesConfig])
@@ -171,60 +175,60 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
     )
 
     s"call the connector and return a $GetPenaltyDetailsSuccessResponse when the request is successful" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel))))
 
       featureSwitching.setEstimatedLPP1FilterEndDate(Some(LocalDate.of(2022, 10, 28)))
 
-      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+      val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
       result.isRight shouldBe true
       result.toOption.get shouldBe GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsResponseAsModel)
     }
 
     s"return $GetPenaltyDetailsMalformed when the response body is malformed" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsMalformed
-          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN] - Failed to parse HTTP response into model for VRN: 123456789")) shouldBe true
+          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyService][VAT] - Failed to parse HTTP response into model for VRN: 123456789")) shouldBe true
         }
       }
     }
 
     s"return $GetPenaltyDetailsNoContent when the response body contains NO_DATA_FOUND" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsNoContent
-          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN] - Got a 404 response and no data was found for GetPenaltyDetails call")) shouldBe true
+          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyService][VAT] - Got a 404 response and no data was found for GetPenaltyDetails call")) shouldBe true
         }
       }
     }
 
     s"return $GetPenaltyDetailsFailureResponse when the connector receives an unmatched status code" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq(vrn123456789))(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT))))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyServiceForVATCVRN("123456789"))
+          val result: GetPenaltyDetailsResponse = await(service.getDataFromPenaltyService(vrn123456789))
           result.isLeft shouldBe true
           result.left.getOrElse(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)
-          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyServiceForVATCVRN] - Unknown status returned from connector for VRN: 123456789")) shouldBe true
+          logs.exists(_.getMessage.contains("[GetPenaltyDetailsService][getDataFromPenaltyService][VAT] - Unknown status returned from connector for VRN: 123456789")) shouldBe true
         }
       }
     }
 
     s"throw an exception when something unknown has happened" in new Setup {
-      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq("123456789"))(any()))
+      when(mockGetPenaltyDetailsConnector.getPenaltyDetails(Matchers.eq(vrn123456789))(any()))
         .thenReturn(Future.failed(new Exception("Something has gone wrong.")))
 
-      val result: Exception = intercept[Exception](await(service.getDataFromPenaltyServiceForVATCVRN("123456789")))
+      val result: Exception = intercept[Exception](await(service.getDataFromPenaltyService(vrn123456789)))
       result.getMessage shouldBe "Something has gone wrong."
     }
   }

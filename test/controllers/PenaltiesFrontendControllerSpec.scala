@@ -18,6 +18,8 @@ package controllers
 
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsSuccessResponse}
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.getPenaltyDetails.latePayment._
@@ -39,6 +41,8 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val mockPenaltiesFrontendService: PenaltiesFrontendService = mock(classOf[PenaltiesFrontendService])
 
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+
   class Setup(isFSEnabled: Boolean = true) {
     reset(mockGetPenaltyDetailsService)
     reset(mockPenaltiesFrontendService)
@@ -51,18 +55,18 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
 
   "use API 1812 data and combine with API 1811 data" must {
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call fails" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-      val result = controller.getPenaltiesData("123456789", Some(""))(fakeRequest)
+      val result = controller.getPenaltiesData(vrn123456789, Some(""))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the 1812 call response body is malformed" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = await(controller.getPenaltiesData("123456789", Some(""))(fakeRequest))
+          val result = await(controller.getPenaltiesData(vrn123456789, Some(""))(fakeRequest))
           result.header.status shouldBe Status.INTERNAL_SERVER_ERROR
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
         }
@@ -87,11 +91,11 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
         ),
         breathingSpace = None
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
       when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(InternalServerError("")))
-      val result = controller.getPenaltiesData("123456789", Some("123456789"))(fakeRequest)
+      val result = controller.getPenaltiesData(vrn123456789, Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
@@ -155,11 +159,11 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
           )
         )
       )
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(Matchers.any())(Matchers.any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.any())(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
       when(mockPenaltiesFrontendService.handleAndCombineGetFinancialDetailsData(Matchers.any(), Matchers.any(), Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(Ok(Json.toJson(penaltyDetailsAfterCombining))))
-      val result = controller.getPenaltiesData("123456789", Some("123456789"))(fakeRequest)
+      val result = controller.getPenaltiesData(vrn123456789, Some("123456789"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.toJson(penaltyDetailsAfterCombining)
     }

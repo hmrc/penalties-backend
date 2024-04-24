@@ -18,6 +18,7 @@ package services
 
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import models.EnrolmentKey
 import models.auditing.UserHasPenaltyAuditModel
 import models.getFinancialDetails.MainTransactionEnum.ManualLPP
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails}
@@ -31,7 +32,7 @@ import services.auditing.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API
-import utils.{DateHelper, PagerDutyHelper, RegimeHelper}
+import utils.{DateHelper, PagerDutyHelper}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,15 +43,15 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
                                          dateHelper: DateHelper,
                                          auditService: AuditService) {
 
-  def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])
+  def handleAndCombineGetFinancialDetailsData(penaltyDetails: GetPenaltyDetails, enrolmentKey: EnrolmentKey, arn: Option[String])
                                              (implicit request: Request[_], ec: ExecutionContext, hc: HeaderCarrier): Future[Result] = {
-    val vrn: String = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey)
-    getFinancialDetailsService.getFinancialDetails(vrn, None).flatMap {
+//    val vrn: String = EnrolmentKey(enrolmentKey).key
+    getFinancialDetailsService.getFinancialDetails(enrolmentKey, None).flatMap {
       financialDetailsResponseWithClearedItems =>
         financialDetailsResponseWithClearedItems.fold({
           errorResponse => {
-            Future(handleErrorResponseFromGetFinancialDetails(errorResponse, vrn)(handleNoContent = {
-              logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+            Future(handleErrorResponseFromGetFinancialDetails(errorResponse, enrolmentKey)(handleNoContent = {
+              logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey.info} with NO_DATA_FOUND in response body")
               if (penaltyDetails.latePaymentPenalty.isEmpty || penaltyDetails.latePaymentPenalty.get.details.isEmpty ||
                 penaltyDetails.latePaymentPenalty.get.details.get.isEmpty) {
                 returnResponse(penaltyDetails, enrolmentKey, arn)
@@ -61,12 +62,12 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
           }
         },
           financialDetailsSuccessWithClearedItems => { //NOTE: The decision was taken to make 2 calls to retrieve data with and without cleared items
-            logger.debug(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for VRN: $vrn")
-            getFinancialDetailsService.getFinancialDetails(vrn, Some(appConfig.queryParametersForGetFinancialDetailsWithoutClearedItems)).map {
+            logger.debug(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=true call returned 200 for ${enrolmentKey.info}")
+            getFinancialDetailsService.getFinancialDetails(enrolmentKey, Some(appConfig.queryParametersForGetFinancialDetailsWithoutClearedItems)).map {
               financialDetailsResponseWithoutClearedItems =>
                 financialDetailsResponseWithoutClearedItems.fold({
-                  handleErrorResponseFromGetFinancialDetails(_, vrn)(handleNoContent = {
-                    logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for VRN: $vrn with NO_DATA_FOUND in response body")
+                  handleErrorResponseFromGetFinancialDetails(_, enrolmentKey)(handleNoContent = {
+                    logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey.info} with NO_DATA_FOUND in response body")
                     val newPenaltyDetails = combineAPIData(penaltyDetails,
                       financialDetailsSuccessWithClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails,
                       FinancialDetails(None, None))
@@ -74,11 +75,11 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
                   })
                 },
                   financialDetailsSuccessWithoutClearedItems => {
-                    logger.debug(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for VRN: $vrn")
+                    logger.debug(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 clearedItems=false call returned 200 for ${enrolmentKey.info}")
                     val newPenaltyDetails = combineAPIData(penaltyDetails,
                       financialDetailsSuccessWithClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails,
                       financialDetailsSuccessWithoutClearedItems.asInstanceOf[GetFinancialDetailsSuccessResponse].financialDetails)
-                    logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 200 for VRN: $vrn")
+                    logger.info(s"[PenaltiesFrontendService][handleAndCombineGetFinancialDetailsData] - 1811 call returned 200 for ${enrolmentKey.info}")
                     returnResponse(newPenaltyDetails, enrolmentKey, arn)
                   })
             }
@@ -87,13 +88,13 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
     }
   }
 
-  def handleErrorResponseFromGetFinancialDetails(financialDetailsResponseWithClearedItems: GetFinancialDetailsFailure, vrn: String)
+  def handleErrorResponseFromGetFinancialDetails(financialDetailsResponseWithClearedItems: GetFinancialDetailsFailure, enrolmentKey: EnrolmentKey)
                                                 (handleNoContent: => Result): Result = {
     financialDetailsResponseWithClearedItems match {
       case GetFinancialDetailsNoContent => handleNoContent
       case GetFinancialDetailsFailureResponse(status) if status == NOT_FOUND => {
-        logger.info(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for VRN: $vrn")
-        NotFound(s"A downstream call returned 404 for VRN: $vrn")
+        logger.info(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey.info}")
+        NotFound(s"A downstream call returned 404 for ${enrolmentKey.info}")
       }
       case GetFinancialDetailsFailureResponse(status) => {
         logger.error(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned an unexpected status: $status")
@@ -101,13 +102,13 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
       }
       case GetFinancialDetailsMalformed => {
         PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1811_API)
-        logger.error(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned invalid body - failed to parse financial details response for VRN: $vrn")
+        logger.error(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned invalid body - failed to parse financial details response for ${enrolmentKey.info}")
         InternalServerError(s"We were unable to parse penalty data.")
       }
     }
   }
 
-  private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: String, arn: Option[String])
+  private def returnResponse(penaltyDetails: GetPenaltyDetails, enrolmentKey: EnrolmentKey, arn: Option[String])
                             (implicit request: Request[_], ec: ExecutionContext, hc: HeaderCarrier): Result = {
     val hasLSP = penaltyDetails.lateSubmissionPenalty.map(_.summary.activePenaltyPoints).getOrElse(0) > 0
     val hasLPP = penaltyDetails.latePaymentPenalty.flatMap(_.details.map(_.length)).getOrElse(0) > 0
@@ -115,8 +116,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
     if (hasLSP || hasLPP) {
       val auditModel = UserHasPenaltyAuditModel(
         penaltyDetails = penaltyDetails,
-        identifier = RegimeHelper.getIdentifierFromEnrolmentKey(enrolmentKey),
-        identifierType = RegimeHelper.getIdentifierTypeFromEnrolmentKey(enrolmentKey),
+        enrolmentKey = enrolmentKey,
         arn = arn,
         dateHelper = dateHelper)
       auditService.audit(auditModel)

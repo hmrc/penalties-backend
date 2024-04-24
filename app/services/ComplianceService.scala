@@ -19,6 +19,7 @@ package services
 import config.featureSwitches.FeatureSwitching
 import connectors.ComplianceConnector
 import connectors.parsers.ComplianceParser
+import models.EnrolmentKey
 import models.compliance.CompliancePayload
 import play.api.Configuration
 import play.api.http.Status._
@@ -30,12 +31,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ComplianceService @Inject()(complianceConnector: ComplianceConnector)(implicit val config: Configuration) extends FeatureSwitching {
 
-  def getComplianceData(vrn: String, startDate: String, endDate: String)
+  def getComplianceData(enrolmentKey: EnrolmentKey, startDate: String, endDate: String)
                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[Int, CompliancePayload]] = {
-    complianceConnector.getComplianceData(vrn, startDate, endDate).map {
+    complianceConnector.getComplianceData(enrolmentKey, startDate, endDate).map {
       _.fold[Either[Int, CompliancePayload]]({
         failureModel =>
-          logger.error(s"[ComplianceService][getComplianceData] - Received error back from DES for compliance data for VRN: $vrn with error: ${failureModel.message}")
+          logger.error(s"[ComplianceService][getComplianceData] - Received error back from DES for compliance data for ${enrolmentKey.info} with error: ${failureModel.message}")
           failureModel match {
             case ComplianceParser.CompliancePayloadFailureResponse(status) => Left(status)
             case ComplianceParser.CompliancePayloadNoData => Left(NOT_FOUND)

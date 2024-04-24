@@ -17,6 +17,8 @@
 package models.auditing
 
 import base.{LogCapturing, SpecBase}
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 
@@ -25,8 +27,9 @@ class ThirdParty1812APIRetrievalAuditModelSpec extends SpecBase with LogCapturin
     "foo" -> "bar"
   )
   val sampleJsonResponseAsString: String = Json.stringify(sampleJsonResponse)
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
 
-  val modelWithJsonifiedBody = ThirdParty1812APIRetrievalAuditModel("123456789", Status.OK, sampleJsonResponse)
+  val modelWithJsonifiedBody = ThirdParty1812APIRetrievalAuditModel(vrn123456789, Status.OK, sampleJsonResponse)
 
   "UserHasPenaltyAuditModel" should {
     "have the correct audit type" in {

@@ -79,15 +79,25 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   lazy val SDESNotificationInfoType: String = config.get[String]("SDESNotification.informationType")
   lazy val SDESNotificationFileRecipient: String = config.get[String]("SDESNotification.file.recipient")
 
-  def getPenaltyDetailsUrl: String = {
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/VATC/VRN/"
-    else etmpBase + "/penalty/details/VATC/VRN/"
+  private def getPenaltyDetailsUrl: String = {
+    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/penalties-stub/penalty/details/"
+    else etmpBase + "/penalty/details/"
   }
 
-  def getFinancialDetailsUrl(vrn: String): String = {
-    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/VRN/$vrn/VATC"
-    else etmpBase + s"/penalty/financial-data/VRN/$vrn/VATC"
+  def getVatPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "VATC/VRN/"
+  def getItsaPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "ITSA/UTR/"
+  def getCtPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "CT/UTR/"
+
+  private def getFinancialDetailsUrl: String = {
+    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/"
+    else etmpBase + s"/penalty/financial-data/"
   }
+
+  def getVatFinancialDetailsUrl(vrn: String): String = getFinancialDetailsUrl + s"VRN/$vrn/VATC"
+
+  def getItsaFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl + s"UTR/$utr/ITSA"
+
+  def getCtFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl + s"UTR/$utr/CT"
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
     if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
@@ -98,13 +108,22 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     config.get[Boolean](s"reasonableExcuses.$excuseName.enabled")
   }
 
-  def getComplianceData(vrn: String, fromDate: String, toDate: String): String = {
+  private def getComplianceDataUrl: String = {
     if (isEnabled(CallDES)) {
-      desBase + s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+      desBase + s"/enterprise/obligation-data/"
     } else {
-      stubBase + s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+      stubBase + s"/penalties-stub/enterprise/obligation-data/"
     }
   }
+
+  def getVatComplianceDataUrl(vrn: String, fromDate: String, toDate: String): String =
+     s"${getComplianceDataUrl}vrn/$vrn/VATC?from=$fromDate&to=$toDate"
+
+  def getItsaComplianceDataUrl(utr: String, fromDate: String, toDate: String): String =
+    s"${getComplianceDataUrl}utr/$utr/ITSA?from=$fromDate&to=$toDate"
+
+  def getCtComplianceDataUrl(utr: String, fromDate: String, toDate: String): String =
+    s"${getComplianceDataUrl}utr/$utr/CT?from=$fromDate&to=$toDate"
 
   def getMimeType(mimeType: String): Option[String] = config.getOptional[String](s"files.extensions.$mimeType")
 }

@@ -20,6 +20,8 @@ import base.{LogCapturing, SpecBase}
 import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.getPenaltyDetails.GetPenaltyDetails
 import org.mockito.Mockito.{mock, reset, when}
 import org.mockito.{ArgumentCaptor, Matchers}
@@ -44,13 +46,15 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   implicit val mockConfiguration: Configuration = mock(classOf[Configuration])
 
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+
   class Setup {
     reset(mockHttpClient)
     reset(mockAppConfig)
     reset(mockConfiguration)
 
     val connector = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, mockConfiguration)
-    when(mockAppConfig.getPenaltyDetailsUrl).thenReturn("/penalty/details/VATC/VRN/")
+    when(mockAppConfig.getVatPenaltyDetailsUrl).thenReturn("/penalty/details/VATC/VRN/")
     when(mockAppConfig.eisEnvironment).thenReturn("env")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("token")
     when(mockConfiguration.getOptional[String](Matchers.eq("feature.switch.time-machine-now"))(Matchers.any()))
@@ -75,7 +79,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isRight shouldBe true
     }
 
@@ -90,7 +94,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
       setTimeMachineDate(Some(LocalDateTime.parse("2023-01-01T01:01:01Z", DateHelper.dateTimeFormatter)))
       val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
-      val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails(vrn123456789))
       result.isRight shouldBe true
       argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2 shouldBe "2023-01-01T01:01:01Z"
     }
@@ -106,7 +110,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
       when(mockConfiguration.getOptional[String](Matchers.eq("feature.switch.time-machine-now"))(Matchers.any()))
         .thenReturn(Some("2023-01-01T01:01:01"))
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isRight shouldBe true
       argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2 shouldBe "2023-01-01T01:01:01Z"
     }
@@ -121,7 +125,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
       val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
-      val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails(vrn123456789))
       result.isRight shouldBe true
       val receiptDateValue: String = argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2
       LocalDateTime.parse(receiptDateValue, DateHelper.dateTimeFormatter).toLocalDate shouldBe LocalDate.now() //Set to LocalDate to stop flaky tests
@@ -136,7 +140,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
@@ -149,7 +153,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.BAD_REQUEST))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
@@ -162,7 +166,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.CONFLICT))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
@@ -175,7 +179,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
@@ -188,7 +192,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
@@ -201,7 +205,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
 
-      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails("123456789"))
+      val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
@@ -215,7 +219,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("", Status.INTERNAL_SERVER_ERROR)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn = "123456789"))
+          val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_5XX_FROM_1812_API.toString)) shouldBe true
           result.isLeft shouldBe true
         }
@@ -232,7 +236,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("", Status.BAD_REQUEST)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn = "123456789"))
+          val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
           logs.exists(_.getMessage.contains(PagerDutyKeys.RECEIVED_4XX_FROM_1812_API.toString)) shouldBe true
           result.isLeft shouldBe true
         }
@@ -249,7 +253,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
         .thenReturn(Future.failed(new Exception("Something weird happened")))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn = "123456789")(HeaderCarrier()))
+          val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789)(HeaderCarrier()))
           logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1812_API.toString)) shouldBe true
           result.isLeft shouldBe true
         }
@@ -269,7 +273,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)))
 
-      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.OK
       Json.parse(result.body) shouldBe Json.toJson(mockGetPenaltyDetailsModelAPI1812)
     }
@@ -283,7 +287,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)))
 
-      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = None)(HeaderCarrier()))
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = None)(HeaderCarrier()))
       result.status shouldBe Status.OK
       Json.parse(result.body) shouldBe Json.toJson(mockGetPenaltyDetailsModelAPI1812)
     }
@@ -297,7 +301,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("You shall not pass", Status.FORBIDDEN)))
 
-      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.FORBIDDEN
     }
 
@@ -310,7 +314,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
           Matchers.any()))
         .thenReturn(Future.failed(UpstreamErrorResponse.apply("Oops :(", Status.INTERNAL_SERVER_ERROR)))
 
-      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+      val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
@@ -324,7 +328,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
         .thenReturn(Future.failed(new Exception("Something weird happened")))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn = "123456789", dateLimit = Some("09"))(HeaderCarrier()))
+          val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = Some("09"))(HeaderCarrier()))
           logs.exists(_.getMessage.contains(PagerDutyKeys.UNKNOWN_EXCEPTION_CALLING_1812_API.toString)) shouldBe true
           result.status shouldBe Status.INTERNAL_SERVER_ERROR
         }

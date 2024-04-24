@@ -17,7 +17,6 @@
 package controllers
 
 import java.time.LocalDate
-
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
@@ -278,21 +277,21 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     )
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call fails" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when the call returns not found" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     s"return NO_CONTENT (${Status.NO_CONTENT}) when the call returns invalid ID" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
@@ -300,13 +299,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
         .thenReturn(BigDecimal(0))
       when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(0)
       when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(0))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
       verify(mockAuditService, times(0)).audit(any())(any(), any(), any())
     }
 
     s"return NO_CONTENT (${Status.NO_CONTENT}) when the call returns an empty body" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsEmptyBody))))
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(false)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
@@ -316,7 +315,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(0))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = await(controller.getSummaryDataForVRN("123456789")(fakeRequest))
+          val result = await(controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest))
           result.header.status shouldBe Status.NO_CONTENT
           logs.exists(_.getMessage == "[APIController][returnResponseForAPI] - User had no penalty data, returning 204 to caller") shouldBe true
         }
@@ -326,24 +325,24 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     }
 
     s"return NO_CONTENT (${Status.NO_CONTENT}) when the VRN is found but has no data" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsNoContent)))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
       status(result) shouldBe Status.NO_CONTENT
     }
 
     s"return BAD_REQUEST (${Status.BAD_REQUEST}) when the user supplies an invalid VRN" in new Setup(isFSEnabled = true) {
-      val result = controller.getSummaryDataForVRN("1234567891234567890")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN("1234567891234567890")(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
       contentAsString(result) shouldBe "VRN: 1234567891234567890 was not in a valid format."
     }
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call returns malformed data" in new Setup(isFSEnabled = true) {
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+          val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
           status(result) shouldBe Status.INTERNAL_SERVER_ERROR
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1812_API.toString)) shouldBe true
         }
@@ -353,13 +352,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     s"return OK (${Status.OK}) when the call returns some data and can be parsed to the correct response" in new Setup(isFSEnabled = true) {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsFullAPIResponse))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(123.45))
       when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
       when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
@@ -379,13 +378,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
     s"return OK (${Status.OK}) when there are no estimated LPPs in penalty details" in new Setup(isFSEnabled = true) {
       when(mockAPIService.checkIfHasAnyPenaltyData(any())).thenReturn(true)
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(0)
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoEstimatedLPPs))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(0))
       when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(0)
       when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(0))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
@@ -406,13 +405,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetailsWithManualLPP))))
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(123.45))
       when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(3)
       when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(388))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn= "123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
@@ -433,13 +432,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
         .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(financialDetailsWithoutManualLPP))))
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(123.45))
       when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
       when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
@@ -460,13 +459,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(123.45))
       when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
       when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
@@ -487,13 +486,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsNoContent)))
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(123.45))
       when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
       when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
-      val result: Future[Result] = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result: Future[Result] = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
@@ -514,13 +513,13 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockAPIService.getNumberOfEstimatedPenalties(any())).thenReturn(2)
       when(mockGetFinancialDetailsService.getFinancialDetails(any(), any())(any()))
         .thenReturn(Future.successful(Left(GetFinancialDetailsMalformed)))
-      when(mockGetPenaltyDetailsService.getDataFromPenaltyServiceForVATCVRN(any())(any()))
+      when(mockGetPenaltyDetailsService.getDataFromPenaltyService(any())(any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsWithManualLPP))))
       when(mockAPIService.findEstimatedPenaltiesAmount(any()))
         .thenReturn(BigDecimal(123.45))
       when(mockAPIService.getNumberOfCrystallisedPenalties(any(), any())).thenReturn(2)
       when(mockAPIService.getCrystallisedPenaltyTotal(any(), any())).thenReturn(BigDecimal(288))
-      val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+      val result = controller.getVatSummaryDataForVRN(vrn= "123456789")(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.parse(
         """
@@ -536,7 +535,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       )
       withCaptureOfLoggingFrom(logger) {
         logs => {
-          val result = controller.getSummaryDataForVRN("123456789")(fakeRequest)
+          val result = controller.getVatSummaryDataForVRN(vrn = "123456789")(fakeRequest)
           status(result) shouldBe Status.OK
           logs.exists(_.getMessage.contains(PagerDutyKeys.MALFORMED_RESPONSE_FROM_1811_API.toString)) shouldBe true
         }
@@ -643,7 +642,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
 
       when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1811Response.toString)))
-      val result = controller.getFinancialDetails(vrn = "123456789",
+      val result = controller.getVatFinancialDetails(vrn = "123456789",
         searchType = Some("CHGREF"),
         searchItem = Some("XC00178236592"),
         dateType = Some("BILLING"),
@@ -667,7 +666,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
-      val result = controller.getFinancialDetails(vrn = "123456789",
+      val result = controller.getVatFinancialDetails(vrn = "123456789",
         searchType = Some("CHGREF"),
         searchItem = Some("XC00178236592"),
         dateType = Some("BILLING"),
@@ -690,7 +689,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockGetFinancialDetailsConnector.getFinancialDetailsForAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
-      val result = controller.getFinancialDetails(vrn = "123456789",
+      val result = controller.getVatFinancialDetails(vrn = "123456789",
         searchType = Some("CHGREF"),
         searchItem = Some("XC00178236592"),
         dateType = Some("BILLING"),
@@ -804,7 +803,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
           |""".stripMargin)
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(OK, sampleAPI1812Response.toString)))
-      val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = Some("02"))(fakeRequest)
+      val result = controller.getVatPenaltyDetails(vrn = "123456789", dateLimit = Some("02"))(fakeRequest)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe sampleAPI1812Response
       verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
@@ -814,7 +813,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(NOT_FOUND, "NOT_FOUND")))
 
-      val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
+      val result = controller.getVatPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
       verify(mockAuditService, times(1)).audit(any())(any(), any(), any())
@@ -824,7 +823,7 @@ class APIControllerSpec extends SpecBase with FeatureSwitching with LogCapturing
       when(mockGetPenaltyDetailsConnector.getPenaltyDetailsForAPI(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse.apply(INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR")))
 
-      val result = controller.getPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
+      val result = controller.getVatPenaltyDetails(vrn = "123456789", dateLimit = None)(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       verify(mockAuditService, times(1)).audit(any())(any(), any(), any())

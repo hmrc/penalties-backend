@@ -1,20 +1,30 @@
 # microservice specific routes
 
-GET        /etmp/penalties/:enrolmentKey                controllers.PenaltiesFrontendController.getPenaltiesData(enrolmentKey: String, arn: Option[String] ?= None)
+GET        /etmp/penalties/:enrolmentKey                controllers.PenaltiesFrontendController.getPenaltiesData(enrolmentKey: EnrolmentKey, arn: Option[String] ?= None)
 
 # Appeals
-GET        /appeals-data/late-submissions               controllers.AppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: String)
-GET        /appeals-data/late-payments                  controllers.AppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: String, isAdditional: Boolean)
+GET        /appeals-data/late-submissions               controllers.AppealsController.getAppealsDataForLateSubmissionPenalty(penaltyId: String, enrolmentKey: EnrolmentKey)
+GET        /appeals-data/late-payments                  controllers.AppealsController.getAppealsDataForLatePaymentPenalty(penaltyId: String, enrolmentKey: EnrolmentKey, isAdditional: Boolean)
 GET        /appeals-data/reasonable-excuses             controllers.AppealsController.getReasonableExcuses
-POST       /appeals/submit-appeal                       controllers.AppealsController.submitAppeal(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean ?= false)
-GET        /appeals-data/multiple-penalties             controllers.AppealsController.getMultiplePenaltyData(penaltyId: String, enrolmentKey: String)
+POST       /appeals/submit-appeal                       controllers.AppealsController.submitAppeal(enrolmentKey: EnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean ?= false)
+GET        /appeals-data/multiple-penalties             controllers.AppealsController.getMultiplePenaltyData(penaltyId: String, enrolmentKey: EnrolmentKey)
 
 # Compliance
-GET        /compliance/des/compliance-data              controllers.ComplianceController.getComplianceData(vrn: String, fromDate: String, toDate: String)
+GET        /compliance/des/compliance-data              controllers.ComplianceController.redirectLegacyGetComplianceData(vrn: String, fromDate: String, toDate: String)
+GET        /vat/compliance/des/compliance-data          controllers.ComplianceController.getVatComplianceData(vrn: String, fromDate: String, toDate: String)
+GET        /itsa/compliance/des/compliance-data         controllers.ComplianceController.getItsaComplianceData(utr: String, fromDate: String, toDate: String)
+GET        /ct/compliance/des/compliance-data           controllers.ComplianceController.getCtComplianceData(utr: String, fromDate: String, toDate: String)
 
 # External API
-GET        /vat/penalties/summary/:vrn                  controllers.APIController.getSummaryDataForVRN(vrn: String)
+GET        /vat/penalties/summary/:vrn                  controllers.APIController.getVatSummaryDataForVRN(vrn: String)
+GET        /itsa/penalties/summary/:utr                 controllers.APIController.getItsaSummaryDataForUTR(utr: String)
+GET        /ct/penalties/summary/:utr                   controllers.APIController.getCtSummaryDataForUTR(utr: String)
 
 # 3rd Party API Endpoints
-GET        /penalty/financial-data/VRN/:vrn/VATC        controllers.APIController.getFinancialDetails(vrn: String, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
-GET        /penalty-details/VAT/VRN/:vrn               controllers.APIController.getPenaltyDetails(vrn: String, dateLimit: Option[String])
+GET        /penalty/financial-data/VRN/:vrn/VATC        controllers.APIController.getVatFinancialDetails(vrn: String, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
+GET        /penalty/financial-data/UTR/:utr/ITSA        controllers.APIController.getItsaFinancialDetails(utr: String, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
+GET        /penalty/financial-data/UTR/:utr/CT          controllers.APIController.getCtFinancialDetails(utr: String, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
+
+GET        /penalty-details/VAT/VRN/:vrn                controllers.APIController.getVatPenaltyDetails(vrn: String, dateLimit: Option[String])
+GET        /penalty-details/ITSA/UTR/:utr               controllers.APIController.getItsaPenaltyDetails(utr: String, dateLimit: Option[String])
+GET        /penalty-details/CT/UTR/:utr                 controllers.APIController.getCtPenaltyDetails(utr: String, dateLimit: Option[String])
