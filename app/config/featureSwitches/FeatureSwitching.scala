@@ -31,8 +31,8 @@ trait FeatureSwitching {
   def isEnabled(featureSwitch: FeatureSwitch): Boolean =
     sys.props.get(featureSwitch.name).map(_.toBoolean).getOrElse(config.get[Boolean](featureSwitch.name))
 
-  def enableFeatureSwitch(featureSwitch: FeatureSwitch): Unit =
-    sys.props += featureSwitch.name -> FEATURE_SWITCH_ON
+  def enableFeatureSwitch(featureSwitch: FeatureSwitch*): Unit =
+    featureSwitch.foreach(fs => sys.props += fs.name -> FEATURE_SWITCH_ON)
 
   def setTimeMachineDate(dateTimeToSet: Option[LocalDateTime]): Unit = {
     logger.debug(s"[FeatureSwitching][setTimeMachineDate] - setting time machine date to: $dateTimeToSet")
@@ -80,8 +80,16 @@ trait FeatureSwitching {
     }
   }
 
-  def disableFeatureSwitch(featureSwitch: FeatureSwitch): Unit =
-    sys.props += featureSwitch.name -> FEATURE_SWITCH_OFF
+  def disableFeatureSwitch(featureSwitch: FeatureSwitch*): Unit =
+    featureSwitch.foreach(fs => sys.props += fs.name -> FEATURE_SWITCH_OFF)
+
+  final def setEnabledFeatureSwitches(featureSwitch: FeatureSwitch*): Unit = {
+    disableFeatureSwitch(FeatureSwitch.listOfAllFeatureSwitches.diff(featureSwitch) :_*)
+    enableFeatureSwitch(featureSwitch:_*)
+  }
+
+  final def setDisabledFeatureSwitches(featureSwitch: FeatureSwitch*): Unit = {
+    enableFeatureSwitch(FeatureSwitch.listOfAllFeatureSwitches.diff(featureSwitch) :_*)
+    disableFeatureSwitch(featureSwitch:_*)
+  }
 }
-
-

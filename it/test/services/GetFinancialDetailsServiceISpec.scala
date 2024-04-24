@@ -16,6 +16,7 @@
 
 package services
 
+import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching}
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.EnrolmentKey
 import models.TaxRegime.VAT
@@ -28,7 +29,8 @@ import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 
-class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
+class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+  setEnabledFeatureSwitches()
   val service: GetFinancialDetailsService = injector.instanceOf[GetFinancialDetailsService]
   val financialDataQueryParam: String = {
       s"includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +

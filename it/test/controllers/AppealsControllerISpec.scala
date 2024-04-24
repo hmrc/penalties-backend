@@ -17,7 +17,7 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import models.appeals.MultiplePenaltiesData
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.http.Status
@@ -32,6 +32,8 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
   with AppealWiremock
   with FileNotificationOrchestratorWiremock
   with FeatureSwitching {
+
+  setEnabledFeatureSwitches()
 
   val controller: AppealsController = injector.instanceOf[AppealsController]
 

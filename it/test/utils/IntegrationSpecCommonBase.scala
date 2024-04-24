@@ -17,6 +17,7 @@
 package utils
 
 import com.codahale.metrics.SharedMetricRegistries
+import com.typesafe.config.ConfigValue
 import config.AppConfig
 import helpers.WiremockHelper
 import org.scalatest.matchers.should.Matchers
@@ -79,9 +80,15 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     "microservice.services.penalties-file-notification-orchestrator.port" -> stubPort
   )
 
-  override lazy val app: Application = new GuiceApplicationBuilder()
-    .configure(configForApp)
-    .build()
+  override lazy val app: Application = {
+    val app = new GuiceApplicationBuilder()
+      .configure(configForApp)
+      .build()
+    val entries: Set[(String, ConfigValue)] = app.configuration.entrySet
+    val dump: String = entries.filter { case (k, v) => k == "feature.switch.call-api-1812-etmp"}.toString()
+    println(s"### APP: ###########################################################################\n$dump\n#######################################################################")
+    app
+  }
 
   implicit val appConfig: AppConfig = injector.instanceOf[AppConfig]
 

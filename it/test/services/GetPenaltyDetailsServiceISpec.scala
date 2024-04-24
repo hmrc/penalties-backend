@@ -16,6 +16,7 @@
 
 package services
 
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
 import models.EnrolmentKey
 import models.TaxRegime.VAT
@@ -32,7 +33,8 @@ import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 
-class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock {
+class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+  setEnabledFeatureSwitches()
   val service: GetPenaltyDetailsService = injector.instanceOf[GetPenaltyDetailsService]
 
   val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get

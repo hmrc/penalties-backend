@@ -125,14 +125,14 @@ class AppealsController @Inject()(val appConfig: AppConfig,
   def submitAppeal(enrolmentKey: EnrolmentKey, isLPP: Boolean, penaltyNumber: String, correlationId: String, isMultiAppeal: Boolean): Action[AnyContent] = Action.async {
     implicit request => {
       request.body.asJson.fold({
-        logger.error(s"[AppealsController][submitAppeal] Unable to submit appel for user with enrolment: $enrolmentKey penalty $penaltyNumber - Failed to validate request body as JSON")
+        logger.error(s"[AppealsController][submitAppeal] Unable to submit appeal for user with enrolment: $enrolmentKey penalty $penaltyNumber - Failed to validate request body as JSON")
         Future(BadRequest("Invalid body received i.e. could not be parsed to JSON"))
       })(
         jsonBody => {
           val parseResultToModel = Json.fromJson(jsonBody)(AppealSubmission.apiReads)
           parseResultToModel.fold(
             failure => {
-              logger.error(s"[AppealsController][submitAppeal] Unable to submit appel for user with enrolment: $enrolmentKey penalty $penaltyNumber - Failed to parse request body to model")
+              logger.error(s"[AppealsController][submitAppeal] Unable to submit appeal for user with enrolment: $enrolmentKey penalty $penaltyNumber - Failed to parse request body to model")
               logger.debug(s"[AppealsController][submitAppeal] Parse failure(s): $failure")
               Future(BadRequest("Failed to parse to model"))
             },

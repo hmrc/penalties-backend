@@ -17,6 +17,7 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
+import config.featureSwitches.FeatureSwitching
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
@@ -25,7 +26,8 @@ import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 import java.time.LocalDate
 import scala.jdk.CollectionConverters._
 
-class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock {
+class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+  setEnabledFeatureSwitches()
   val controller: PenaltiesFrontendController = injector.instanceOf[PenaltiesFrontendController]
   val financialDataQueryParamWithClearedItems: String = {
       s"includeClearedItems=true&includeStatisticalItems=true&includePaymentOnAccount=true" +
@@ -560,11 +562,11 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     }
   }
 
-  s"return NOT_FOUND (${Status.NOT_FOUND})" when {
+  s"return NOT_FOUND (${Status.BAD_REQUEST})" when {
     "the user supplies an invalid VRN" in {
       mockStubResponseForGetPenaltyDetails(Status.OK, "123456789", body = Some(getPenaltyDetailsJson.toString()))
       val result = await(buildClientForRequestToApp(uri = "/etmp/penalties/123456789123456789").get())
-      result.status shouldBe NOT_FOUND
+      result.status shouldBe BAD_REQUEST
     }
   }
 
