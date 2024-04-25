@@ -244,7 +244,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
 
@@ -256,7 +256,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP returns data but the given penaltyId is wrong" in new Setup {
       val samplePenaltyId: String = "1234"
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
@@ -267,7 +267,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
@@ -277,7 +277,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
@@ -292,7 +292,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "123456789"
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
@@ -311,7 +311,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
       val samplePenaltyId: String = "123456789"
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
@@ -475,7 +475,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
 
@@ -488,7 +488,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP returns data but the given penaltyId is wrong" in new Setup {
       val samplePenaltyId: String = "1234"
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
@@ -500,7 +500,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when the call to ETMP fails for some reason" in new Setup {
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
 
@@ -511,7 +511,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return ISE (${Status.INTERNAL_SERVER_ERROR}) when API 1812 call returns malformed data" in new Setup {
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
       withCaptureOfLoggingFrom(logger) {
@@ -526,7 +526,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches" in new Setup {
       val samplePenaltyId: String = "1234567890"
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
@@ -546,7 +546,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches for Additional penalty" in new Setup {
       val samplePenaltyId: String = "1234567891"
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetails))))
 
@@ -566,7 +566,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (LPP1 - defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "1234567890"
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
@@ -586,7 +586,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return OK (${Status.OK}) when the call to ETMP succeeds and the penalty ID matches (LPP2 - defaulting comms date if not present)" in new Setup {
       val samplePenaltyId: String = "1234567891"
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockAppConfig.getTimeMachineDateTime).thenReturn(LocalDateTime.now)
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsNoCommunicationsDate))))
@@ -1407,7 +1407,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return NO_CONTENT (${Status.NO_CONTENT})" when {
       "the appeal service returns None" in new Setup {
         val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
         when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
           .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(getPenaltyDetailsOnePenalty))))
         when(mockAppealsService.findMultiplePenalties(any(), any())).thenReturn(None)
@@ -1419,7 +1419,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return OK (${Status.OK})" when {
       "the appeal service returns Some" in new Setup {
         val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
         val expectedReturnModel: MultiplePenaltiesData = MultiplePenaltiesData(
           firstPenaltyChargeReference = "1234567891",
           firstPenaltyAmount = 113.45,
@@ -1441,7 +1441,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
     s"return ISE (${Status.INTERNAL_SERVER_ERROR})" when {
       "API 1812 call returns malformed data" in new Setup {
         val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
         when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsMalformed)))
         withCaptureOfLoggingFrom(logger) {
@@ -1455,7 +1455,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
       "the call to ETMP fails for some reason" in new Setup {
         val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+        val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
         when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
           .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))))
         val result: Future[Result] = controller.getMultiplePenaltyData("1", sampleEnrolmentKey)(fakeRequest)
@@ -1465,7 +1465,7 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
 
     s"return NOT_FOUND (${Status.NOT_FOUND}) when ETMP can not find the data for the given enrolment key" in new Setup {
       val sampleEnrolmentKey: EnrolmentKey = EnrolmentKey("HMRC-MTD-VAT~VRN~123456789")
-      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+      val vrn: EnrolmentKey = EnrolmentKey(VAT, "123456789")
       when(mockGetPenaltyDetailsService.getDataFromPenaltyService(Matchers.eq(vrn))(Matchers.any()))
         .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))))
       val result: Future[Result] = controller.getMultiplePenaltyData("1", sampleEnrolmentKey)(fakeRequest)

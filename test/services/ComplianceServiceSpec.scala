@@ -33,7 +33,7 @@ class ComplianceServiceSpec extends SpecBase {
   val mockComplianceConnector: ComplianceConnector = mock(classOf[ComplianceConnector])
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
     val service = new ComplianceService(mockComplianceConnector)(appConfig.config)

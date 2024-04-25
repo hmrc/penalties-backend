@@ -18,9 +18,8 @@ package models
 
 import models.EnrolmentKey.KeyType
 import models.TaxRegime.{CT, ITSA, TaxRegime, VAT}
-import play.api.mvc.QueryStringBindable.{Parsing => QueryStringParsing}
 import play.api.mvc.PathBindable.{Parsing => PathParsing}
-import utils.Logger.logger
+import play.api.mvc.QueryStringBindable.{Parsing => QueryStringParsing}
 
 import scala.util.matching.Regex
 
@@ -47,19 +46,11 @@ object EnrolmentKey {
     case _ => throw new Exception(s"Invalid enrolment key: $key")
   }
 
-  /** construct an enrolment key, or None if invalid */
-  def apply(regime: TaxRegime, keyType: KeyType, key: String): Option[EnrolmentKey] =
-    try {
-      Some(new EnrolmentKey(regime, keyType, key))
-    } catch {
-      case e: Exception =>
-        logger.debug(e.getMessage)
-        None
-    }
+  /** construct an enrolment key */
+  def apply(regime: TaxRegime, keyType: KeyType, key: String): EnrolmentKey = new EnrolmentKey(regime, keyType, key)
 
-  /** construct an enrolment key, assuming the default key type for the regime, or None if invalid */
-  def apply(regime: TaxRegime, key: String): Option[EnrolmentKey] =
-    EnrolmentKey(regime, defaultKeyType(regime), key)
+  /** construct an enrolment key, assuming the default key type for the regime */
+  def apply(regime: TaxRegime, key: String): EnrolmentKey = EnrolmentKey(regime, defaultKeyType(regime), key)
 
   def unapply(enrolmentKey: EnrolmentKey): Option[(TaxRegime, KeyType, String)] = Some((enrolmentKey.regime, enrolmentKey.keyType, enrolmentKey.key))
 
@@ -79,7 +70,7 @@ case class EnrolmentKey(regime: TaxRegime, keyType: KeyType, key: String) {
   (regime, keyType)  match {
     case (VAT, VRN) if VRN.regEx.matches(key) => //ok
     case (ITSA, UTR) if UTR.regEx.matches(key) => //ok
-    case _ => throw new Exception(s"Invalid key for $regime, $keyType: $key")
+    case _ => throw new Exception(s"Invalid $regime $keyType: $key")
   }
 
   override def toString: String = s"HMRC-MTD-$regime~$keyType~$key"

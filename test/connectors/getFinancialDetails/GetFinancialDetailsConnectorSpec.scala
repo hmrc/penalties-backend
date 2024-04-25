@@ -40,7 +40,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
     reset(mockHttpClient)

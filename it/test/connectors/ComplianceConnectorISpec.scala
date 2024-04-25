@@ -33,7 +33,7 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   val testStartDate: LocalDateTime = LocalDateTime.of(2021,1,1, 1,0,0)
   val testEndDate: LocalDateTime = LocalDateTime.of(2021,1,8,1,0,0)
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
     val connector: ComplianceConnector = injector.instanceOf[ComplianceConnector]

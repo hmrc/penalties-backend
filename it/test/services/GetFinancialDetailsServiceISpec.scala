@@ -37,7 +37,7 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
       s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" +
       s"&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}"
   }
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   "getFinancialDetails" when {
 

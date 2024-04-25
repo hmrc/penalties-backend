@@ -33,7 +33,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val startOfLogMsg: String = ""
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
     enableFeatureSwitch(CallDES)

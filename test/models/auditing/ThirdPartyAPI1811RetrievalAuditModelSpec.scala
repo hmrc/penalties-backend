@@ -31,8 +31,8 @@ class ThirdPartyAPI1811RetrievalAuditModelSpec extends SpecBase with LogCapturin
 
   val sampleJsonResponseString: String = Json.stringify(sampledJsonResponse)
 
-  val modelWithstringifiedJson = ThirdPartyAPI1811RetrievalAuditModel(EnrolmentKey(VAT,"123456789").get, Status.OK, sampleJsonResponseString)
-  val modelWithStringBody = ThirdPartyAPI1811RetrievalAuditModel(EnrolmentKey(VAT,"123456780").get, Status.INTERNAL_SERVER_ERROR, "An error occurred")
+  val modelWithstringifiedJson = ThirdPartyAPI1811RetrievalAuditModel(EnrolmentKey(VAT,"123456789"), Status.OK, sampleJsonResponseString)
+  val modelWithStringBody = ThirdPartyAPI1811RetrievalAuditModel(EnrolmentKey(VAT,"123456780"), Status.INTERNAL_SERVER_ERROR, "An error occurred")
 
   "ThirdPartyAPI1811RetrievalAuditModel" should {
     "have the correct audit type" in {

@@ -24,10 +24,6 @@ import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.GetFinan
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import models.EnrolmentKey
-import models.EnrolmentKey.{UTR, VRN}
-import models.TaxRegime.{CT, ITSA, VAT}
-
-import javax.inject.Inject
 import models.api.APIModel
 import models.auditing.{ThirdParty1812APIRetrievalAuditModel, ThirdPartyAPI1811RetrievalAuditModel, UserHasPenaltyAuditModel}
 import models.getFinancialDetails.FinancialDetails
@@ -43,6 +39,7 @@ import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys._
 import utils.{DateHelper, PagerDutyHelper}
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class APIController @Inject()(auditService: AuditService,
@@ -55,72 +52,53 @@ class APIController @Inject()(auditService: AuditService,
                               cc: ControllerComponents,
                               filterService: FilterService)(implicit ec: ExecutionContext, val config: Configuration) extends BackendController(cc) with FeatureSwitching {
 
-  def getVatSummaryDataForVRN(vrn: String): Action[AnyContent] = {
-    EnrolmentKey(VAT, VRN, vrn) match {
-      case Some(key) => getSummaryData(key)
-      case None => Action { BadRequest(s"VRN: $vrn was not in a valid format.") }
-    }
-  }
-
-  def getItsaSummaryDataForUTR(utr: String): Action[AnyContent] = {
-    EnrolmentKey(ITSA, UTR, utr) match {
-      case Some(key) => getSummaryData(key)
-      case None => Action { BadRequest(s"UTR: $utr was not in a valid format.") }
-    }
-  }
-
-  def getCtSummaryDataForUTR(utr: String): Action[AnyContent] = {
-    EnrolmentKey(CT, UTR, utr) match {
-      case Some(key) => getSummaryData(key)
-      case None => Action { BadRequest(s"UTR: $utr was not in a valid format.") }
-    }
-  }
-
-  private def getSummaryData(enrolmentKey: EnrolmentKey): Action[AnyContent] = Action.async {
+  def getSummaryData(regime: String, id: String): Action[AnyContent] = Action.async {
     implicit request => {
-      import enrolmentKey._
-      getPenaltyDetailsService.getDataFromPenaltyService(enrolmentKey).flatMap {
-        _.fold({
-          case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
-            //logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
-            Future(NotFound(s"A downstream call returned 404 for $keyType: $key"))
-          }
-          case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY => {
-            //Temporary measure to avoid 422 causing issues
-            val responsePayload = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
-            //logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn - Overriding response")
-            Future(returnResponseForAPI(responsePayload.penaltyDetails, enrolmentKey))
-          }
-          case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
-            //logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
-            Future(InternalServerError(s"A downstream call returned an unexpected status: $status for $info"))
-          }
-          case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
-            PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
-            //logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response for VRN: $vrn")
-            Future(InternalServerError(s"We were unable to parse penalty data."))
-          }
-          case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
-            logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned no content for $info")
-            Future(NoContent)
-          }
-        },
-          success => {
-            logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for $info")
-            val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
-            if (penaltyDetails.latePaymentPenalty.exists(LPP =>
-              LPP.ManualLPPIndicator.getOrElse(false))) {
-              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 data has ManualLPPIndicator set to true, calling 1811")
-              callFinancialDetailsForManualLPPs(enrolmentKey).map {
-                financialDetails => {
-                  returnResponseForAPI(penaltyDetails, enrolmentKey, financialDetails)
-                }
-              }
-            } else {
-              Future(returnResponseForAPI(penaltyDetails, enrolmentKey))
+      composeEnrolmentKey(regime, id).andThen { enrolmentKey =>
+        import enrolmentKey._
+        getPenaltyDetailsService.getDataFromPenaltyService(enrolmentKey).flatMap {
+          _.fold({
+            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+              //logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
+              Future(NotFound(s"A downstream call returned 404 for $keyType: $key"))
             }
-          }
-        )
+            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY => {
+              //Temporary measure to avoid 422 causing issues
+              val responsePayload = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
+              //logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn - Overriding response")
+              Future(returnResponseForAPI(responsePayload.penaltyDetails, enrolmentKey))
+            }
+            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
+              //logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
+              Future(InternalServerError(s"A downstream call returned an unexpected status: $status for $info"))
+            }
+            case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+              PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
+              //logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response for VRN: $vrn")
+              Future(InternalServerError(s"We were unable to parse penalty data."))
+            }
+            case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
+              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned no content for $info")
+              Future(NoContent)
+            }
+          },
+            success => {
+              logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for $info")
+              val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
+              if (penaltyDetails.latePaymentPenalty.exists(LPP =>
+                LPP.ManualLPPIndicator.getOrElse(false))) {
+                logger.info(s"[APIController][getSummaryDataForVRN] - 1812 data has ManualLPPIndicator set to true, calling 1811")
+                callFinancialDetailsForManualLPPs(enrolmentKey).map {
+                  financialDetails => {
+                    returnResponseForAPI(penaltyDetails, enrolmentKey, financialDetails)
+                  }
+                }
+              } else {
+                Future(returnResponseForAPI(penaltyDetails, enrolmentKey))
+              }
+            }
+          )
+        }
       }
     }
   }
@@ -180,76 +158,7 @@ class APIController @Inject()(auditService: AuditService,
     }
   }
 
-  def getVatFinancialDetails(vrn: String,
-                          searchType: Option[String],
-                          searchItem: Option[String],
-                          dateType: Option[String],
-                          dateFrom: Option[String],
-                          dateTo: Option[String],
-                          includeClearedItems: Option[Boolean],
-                          includeStatisticalItems: Option[Boolean],
-                          includePaymentOnAccount: Option[Boolean],
-                          addRegimeTotalisation: Option[Boolean],
-                          addLockInformation: Option[Boolean],
-                          addPenaltyDetails: Option[Boolean],
-                          addPostedInterestDetails: Option[Boolean],
-                          addAccruingInterestDetails: Option[Boolean]): Action[AnyContent] = {
-    EnrolmentKey(VAT, VRN, vrn) match {
-      case Some(key) => getFinancialDetails(key, searchType, searchItem, dateType, dateFrom, dateTo, includeClearedItems, includeStatisticalItems,
-        includePaymentOnAccount, addRegimeTotalisation, addLockInformation, addPenaltyDetails, addPostedInterestDetails, addAccruingInterestDetails)
-      case None => Action {
-        BadRequest(s"VRN: $vrn was not in a valid format.")
-      }
-    }
-  }
-
-  def getItsaFinancialDetails(utr: String,
-                             searchType: Option[String],
-                             searchItem: Option[String],
-                             dateType: Option[String],
-                             dateFrom: Option[String],
-                             dateTo: Option[String],
-                             includeClearedItems: Option[Boolean],
-                             includeStatisticalItems: Option[Boolean],
-                             includePaymentOnAccount: Option[Boolean],
-                             addRegimeTotalisation: Option[Boolean],
-                             addLockInformation: Option[Boolean],
-                             addPenaltyDetails: Option[Boolean],
-                             addPostedInterestDetails: Option[Boolean],
-                             addAccruingInterestDetails: Option[Boolean]): Action[AnyContent] = {
-    EnrolmentKey(ITSA, UTR, utr) match {
-      case Some(key) => getFinancialDetails(key, searchType, searchItem, dateType, dateFrom, dateTo, includeClearedItems, includeStatisticalItems,
-        includePaymentOnAccount, addRegimeTotalisation, addLockInformation, addPenaltyDetails, addPostedInterestDetails, addAccruingInterestDetails)
-      case None => Action {
-        BadRequest(s"UTR: $utr was not in a valid format.")
-      }
-    }
-  }
-
-  def getCtFinancialDetails(utr: String,
-                              searchType: Option[String],
-                              searchItem: Option[String],
-                              dateType: Option[String],
-                              dateFrom: Option[String],
-                              dateTo: Option[String],
-                              includeClearedItems: Option[Boolean],
-                              includeStatisticalItems: Option[Boolean],
-                              includePaymentOnAccount: Option[Boolean],
-                              addRegimeTotalisation: Option[Boolean],
-                              addLockInformation: Option[Boolean],
-                              addPenaltyDetails: Option[Boolean],
-                              addPostedInterestDetails: Option[Boolean],
-                              addAccruingInterestDetails: Option[Boolean]): Action[AnyContent] = {
-    EnrolmentKey(CT, UTR, utr) match {
-      case Some(key) => getFinancialDetails(key, searchType, searchItem, dateType, dateFrom, dateTo, includeClearedItems, includeStatisticalItems,
-        includePaymentOnAccount, addRegimeTotalisation, addLockInformation, addPenaltyDetails, addPostedInterestDetails, addAccruingInterestDetails)
-      case None => Action {
-        BadRequest(s"UTR: $utr was not in a valid format.")
-      }
-    }
-  }
-
-  private def getFinancialDetails(enrolmentKey: EnrolmentKey,
+  def getFinancialDetails(regime: String, idType: String, id: String,
                           searchType: Option[String],
                           searchItem: Option[String],
                           dateType: Option[String],
@@ -264,99 +173,76 @@ class APIController @Inject()(auditService: AuditService,
                           addPostedInterestDetails: Option[Boolean],
                           addAccruingInterestDetails: Option[Boolean]): Action[AnyContent] = Action.async {
     implicit request => {
-      val response = getFinancialDetailsConnector.getFinancialDetailsForAPI(enrolmentKey,
-        searchType,
-        searchItem,
-        dateType,
-        dateFrom,
-        dateTo,
-        includeClearedItems,
-        includeStatisticalItems,
-        includePaymentOnAccount,
-        addRegimeTotalisation,
-        addLockInformation,
-        addPenaltyDetails,
-        addPostedInterestDetails,
-        addAccruingInterestDetails
-      )
+      composeEnrolmentKey(regime, idType, id).andThen { enrolmentKey =>
+        val response = getFinancialDetailsConnector.getFinancialDetailsForAPI(enrolmentKey,
+          searchType,
+          searchItem,
+          dateType,
+          dateFrom,
+          dateTo,
+          includeClearedItems,
+          includeStatisticalItems,
+          includePaymentOnAccount,
+          addRegimeTotalisation,
+          addLockInformation,
+          addPenaltyDetails,
+          addPostedInterestDetails,
+          addAccruingInterestDetails
+        )
 
-      response.map(
-        res => {
-          val auditToSend = ThirdPartyAPI1811RetrievalAuditModel(enrolmentKey, res.status, res.body)
-          auditService.audit(auditToSend)
-          res.status match {
-            case OK =>
-              logger.info(s"[APIController][getFinancialDetails] - 1811 call (3rd party API) returned 200 for ${enrolmentKey.info}")
-              logger.debug("[APIController][getFinancialDetails] Ok response received: " + res)
-              Ok(res.json)
-            case NOT_FOUND =>
-              logger.error("[APIController][getFinancialDetails] - 1811 call (3rd party API) returned 404 - error received: " + res)
-              Status(res.status)(Json.toJson(res.body))
-            case status =>
-              PagerDutyHelper.logStatusCode("getFinancialDetails", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
-              logger.error(s"[APIController][getFinancialDetails] - 1811 call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
-              Status(res.status)(Json.toJson(res.body))
-          }
-        })
-    }
-  }
-
-  def getVatPenaltyDetails(vrn: String, dateLimit: Option[String]): Action[AnyContent] = {
-    EnrolmentKey(VAT, VRN, vrn) match {
-      case Some(key) => getPenaltyDetails(key, dateLimit)
-      case None => Action {
-        BadRequest(s"VRN: $vrn was not in a valid format.")
+        response.map(
+          res => {
+            val auditToSend = ThirdPartyAPI1811RetrievalAuditModel(enrolmentKey, res.status, res.body)
+            auditService.audit(auditToSend)
+            res.status match {
+              case OK =>
+                logger.info(s"[APIController][getFinancialDetails] - 1811 call (3rd party API) returned 200 for ${enrolmentKey.info}")
+                logger.debug("[APIController][getFinancialDetails] Ok response received: " + res)
+                Ok(res.json)
+              case NOT_FOUND =>
+                logger.error("[APIController][getFinancialDetails] - 1811 call (3rd party API) returned 404 - error received: " + res)
+                Status(res.status)(Json.toJson(res.body))
+              case status =>
+                PagerDutyHelper.logStatusCode("getFinancialDetails", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
+                logger.error(s"[APIController][getFinancialDetails] - 1811 call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
+                Status(res.status)(Json.toJson(res.body))
+            }
+          })
       }
     }
   }
 
-  def getItsaPenaltyDetails(utr: String, dateLimit: Option[String]): Action[AnyContent] = {
-    EnrolmentKey(ITSA, UTR, utr) match {
-      case Some(key) => getPenaltyDetails(key, dateLimit)
-      case None => Action {
-        BadRequest(s"UTR: $utr was not in a valid format.")
-      }
-    }
-  }
-
-  def getCtPenaltyDetails(utr: String, dateLimit: Option[String]): Action[AnyContent] = {
-    EnrolmentKey(CT, UTR, utr) match {
-      case Some(key) => getPenaltyDetails(key, dateLimit)
-      case None => Action {
-        BadRequest(s"UTR: $utr was not in a valid format.")
-      }
-    }
-  }
-
-  private def getPenaltyDetails(enrolmentKey: EnrolmentKey, dateLimit: Option[String]): Action[AnyContent] = Action.async {
+  def getPenaltyDetails(regime: String, idType: String, id: String, dateLimit: Option[String]): Action[AnyContent] = Action.async {
     implicit request => {
-      val response = getPenaltyDetailsConnector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit)
-      response.map(
-        res => {
-          val processedResBody = filterService.tryJsonParseOrJsString(res.body)
-          val filteredResBody = if(res.status.equals(OK) || !processedResBody.isInstanceOf[JsString]) {
-            filterResponseBody(
-              processedResBody, enrolmentKey, "getPenaltyDetails")
-          } else {
-            processedResBody
+      composeEnrolmentKey(regime, idType, id).andThen { enrolmentKey =>
+        val response = getPenaltyDetailsConnector.getPenaltyDetailsForAPI(enrolmentKey, dateLimit)
+        response.map(
+          res => {
+            val processedResBody = filterService.tryJsonParseOrJsString(res.body)
+            val filteredResBody = if (res.status.equals(OK) || !processedResBody.isInstanceOf[JsString]) {
+              filterResponseBody(
+                processedResBody, enrolmentKey, "getPenaltyDetails")
+            } else {
+              processedResBody
+            }
+            val auditToSend = ThirdParty1812APIRetrievalAuditModel(enrolmentKey, res.status, filteredResBody)
+            auditService.audit(auditToSend)
+            res.status match {
+              case OK =>
+                logger.info(s"[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 200 for ${enrolmentKey.info}")
+                logger.debug("[APIController][getPenaltyDetails] Ok response received: " + res)
+                Ok(filteredResBody)
+              case NOT_FOUND =>
+                logger.error("[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 404 - error received: " + res)
+                Status(res.status)(Json.toJson(res.body))
+              case status =>
+                PagerDutyHelper.logStatusCode("getPenaltyDetails", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
+                logger.error(s"[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
+                Status(res.status)(Json.toJson(res.body))
+            }
           }
-          val auditToSend = ThirdParty1812APIRetrievalAuditModel(enrolmentKey, res.status, filteredResBody)
-          auditService.audit(auditToSend)
-          res.status match {
-            case OK =>
-              logger.info(s"[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 200 for ${enrolmentKey.info}")
-              logger.debug("[APIController][getPenaltyDetails] Ok response received: " + res)
-              Ok(filteredResBody)
-            case NOT_FOUND =>
-              logger.error("[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned 404 - error received: " + res)
-              Status(res.status)(Json.toJson(res.body))
-            case status =>
-              PagerDutyHelper.logStatusCode("getPenaltyDetails", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
-              logger.error(s"[APIController][getPenaltyDetails] - 1812 call (3rd party API) returned an unknown error - status ${res.status} returned from EIS")
-              Status(res.status)(Json.toJson(res.body))
-          }
-        }
-      )
+        )
+      }
     }
   }
 

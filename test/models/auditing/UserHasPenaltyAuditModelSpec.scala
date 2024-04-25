@@ -33,7 +33,7 @@ class UserHasPenaltyAuditModelSpec extends SpecBase with LogCapturing {
   val mockDateHelper: DateHelper = mock(classOf[DateHelper])
   when(mockDateHelper.dateNow()).thenReturn(LocalDate.of(2022, 1, 1))
 
-  val vrn1234 = EnrolmentKey(VAT, "123456789").get
+  val vrn1234 = EnrolmentKey(VAT, "123456789")
 
   val basicGetPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(
     totalisations = None,

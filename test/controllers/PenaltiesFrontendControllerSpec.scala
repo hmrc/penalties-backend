@@ -21,8 +21,8 @@ import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyD
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
-import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import models.getPenaltyDetails.latePayment._
+import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import org.mockito.Matchers
 import org.mockito.Mockito._
 import play.api.http.Status
@@ -41,7 +41,7 @@ class PenaltiesFrontendControllerSpec extends SpecBase with LogCapturing with LP
   val mockGetPenaltyDetailsService: GetPenaltyDetailsService = mock(classOf[GetPenaltyDetailsService])
   val mockPenaltiesFrontendService: PenaltiesFrontendService = mock(classOf[PenaltiesFrontendService])
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup(isFSEnabled: Boolean = true) {
     reset(mockGetPenaltyDetailsService)

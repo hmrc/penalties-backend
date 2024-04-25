@@ -37,7 +37,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
   setEnabledFeatureSwitches()
   val service: GetPenaltyDetailsService = injector.instanceOf[GetPenaltyDetailsService]
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   "getDataFromPenaltyServiceForVATCVRN" when {
     val getPenaltyDetailsModel: GetPenaltyDetails = GetPenaltyDetails(

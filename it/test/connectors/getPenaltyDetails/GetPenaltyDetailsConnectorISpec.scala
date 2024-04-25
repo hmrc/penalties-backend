@@ -32,7 +32,7 @@ import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
     val connector: GetPenaltyDetailsConnector = injector.instanceOf[GetPenaltyDetailsConnector]

@@ -17,7 +17,6 @@
 package utils
 
 import com.codahale.metrics.SharedMetricRegistries
-import com.typesafe.config.ConfigValue
 import config.AppConfig
 import helpers.WiremockHelper
 import org.scalatest.matchers.should.Matchers
@@ -84,9 +83,9 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
     val app = new GuiceApplicationBuilder()
       .configure(configForApp)
       .build()
-    val entries: Set[(String, ConfigValue)] = app.configuration.entrySet
-    val dump: String = entries.filter { case (k, v) => k == "feature.switch.call-api-1812-etmp"}.toString()
-    println(s"### APP: ###########################################################################\n$dump\n#######################################################################")
+//    val entries: Set[(String, ConfigValue)] = app.configuration.entrySet
+//    val dump: String = entries.filter { case (k, v) => k == "feature.switch.call-api-1812-etmp"}.toString()
+//    println(s"### APP: ###########################################################################\n$dump\n#######################################################################")
     app
   }
 

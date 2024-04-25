@@ -21,9 +21,9 @@ import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.TaxRegime.VAT
-import models.{EnrolmentKey, getFinancialDetails}
 import models.getFinancialDetails.FinancialDetails
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
+import models.{EnrolmentKey, getFinancialDetails}
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
@@ -40,7 +40,7 @@ class GetFinancialDetailsServiceSpec extends SpecBase with FeatureSwitching with
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val config: Configuration = mock(classOf[Configuration])
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
   val mockGetFinancialDetailsConnector: GetFinancialDetailsConnector = mock(classOf[GetFinancialDetailsConnector])
   class Setup {
     val service = new GetFinancialDetailsService(mockGetFinancialDetailsConnector)

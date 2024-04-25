@@ -46,7 +46,7 @@ class ComplianceConnectorSpec extends SpecBase with LogCapturing {
   val date2: LocalDateTime = LocalDateTime.of(
     2024, 1, 1, 1, 1, 0)
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
     reset(mockHttpClient)

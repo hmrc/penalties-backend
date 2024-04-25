@@ -46,7 +46,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   implicit val mockConfiguration: Configuration = mock(classOf[Configuration])
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
     reset(mockHttpClient)

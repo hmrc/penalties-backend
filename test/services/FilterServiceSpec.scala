@@ -48,7 +48,7 @@ class FilterServiceSpec extends SpecBase with LSPDetailsBase with LPPDetailsBase
 
   val mockAppConfig: AppConfig = new AppConfig(mockConfig, mockServicesConfig)
   val filterService = new FilterService
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   "tryJsonParseOrJsString" should {
     "return a JsValue when the body can be parsed" in {

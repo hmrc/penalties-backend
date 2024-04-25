@@ -18,8 +18,11 @@ package services
 
 import base.{LPPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
+import config.featureSwitches.FeatureSwitching
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
+import models.EnrolmentKey
+import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
@@ -30,24 +33,20 @@ import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.test.Helpers.{IM_A_TEAPOT, await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import utils.Logger.logger
 
 import java.time.LocalDate
-import config.featureSwitches.FeatureSwitching
-import models.EnrolmentKey
-import models.TaxRegime.VAT
-import play.api.http.Status.INTERNAL_SERVER_ERROR
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDetailsBase {
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockGetPenaltyDetailsConnector: GetPenaltyDetailsConnector = mock(classOf[GetPenaltyDetailsConnector])
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup(withRealConfig: Boolean = true) {
     implicit val mockConfig: Configuration = mock(classOf[Configuration])

@@ -87,7 +87,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     breathingSpace = None
   )
 
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
     reset(mockAppConfig)

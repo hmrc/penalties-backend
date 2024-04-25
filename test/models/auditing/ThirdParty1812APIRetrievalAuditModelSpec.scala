@@ -27,7 +27,7 @@ class ThirdParty1812APIRetrievalAuditModelSpec extends SpecBase with LogCapturin
     "foo" -> "bar"
   )
   val sampleJsonResponseAsString: String = Json.stringify(sampleJsonResponse)
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789").get
+  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   val modelWithJsonifiedBody = ThirdParty1812APIRetrievalAuditModel(vrn123456789, Status.OK, sampleJsonResponse)
 
