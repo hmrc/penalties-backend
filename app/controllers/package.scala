@@ -15,7 +15,7 @@
  */
 
 import models.EnrolmentKey
-import models.EnrolmentKey.VRN
+import models.EnrolmentKey.{UTR, VRN}
 import models.TaxRegime.{ITSA, VAT}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -35,7 +35,9 @@ package object controllers {
   def composeEnrolmentKey(regime: String, keyType: String, key: String): Try[EnrolmentKey] = {
     (regime.toUpperCase, keyType.toUpperCase) match {
       case ("VAT", "VRN") | ("VATC", "VRN") => Try(EnrolmentKey(VAT, VRN, key))
-      case ("IT", "UTR") | ("ITSA", "UTR")  => Try(EnrolmentKey(ITSA, VRN, key))
+      case ("VAT", _) | ("VATC", _) => Failure(new Exception(s"Unsupported id type: $keyType"))
+      case ("IT", "UTR") | ("ITSA", "UTR")  => Try(EnrolmentKey(ITSA, UTR, key))
+      case ("IT", _) | ("ITSA", _)  => Failure(new Exception(s"Unsupported id type: $keyType"))
       case (other, _) => Failure(new Exception(s"Unsupported regime: $other"))
     }
   }
@@ -44,7 +46,7 @@ package object controllers {
   def composeEnrolmentKey(regime: String, key: String): Try[EnrolmentKey] = {
     regime.toUpperCase match {
       case "VAT" | "VATC" => Try(EnrolmentKey(VAT, VRN, key))
-      case "IT" | "ITSA" => Try(EnrolmentKey(ITSA, VRN, key))
+      case "IT" | "ITSA" => Try(EnrolmentKey(ITSA, UTR, key))
       case other => Failure(new Exception(s"Unsupported regime: $other"))
     }
   }
