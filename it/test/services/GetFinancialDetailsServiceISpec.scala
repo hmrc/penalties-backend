@@ -16,12 +16,13 @@
 
 package services
 
-import config.featureSwitches.{CallAPI1811ETMP, CallAPI1812ETMP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
 import models.EnrolmentKey
-import models.TaxRegime.VAT
+import models.TaxRegime.{ITSA, VAT}
 import models.getFinancialDetails._
 import models.getFinancialDetails.totalisation._
+import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -29,7 +30,7 @@ import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
 
-class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching {
+class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   setEnabledFeatureSwitches()
   val service: GetFinancialDetailsService = injector.instanceOf[GetFinancialDetailsService]
   val financialDataQueryParam: String = {
@@ -37,42 +38,46 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
       s"&addRegimeTotalisation=true&addLockInformation=true&addPenaltyDetails=true&addPostedInterestDetails=true&addAccruingInterestDetails=true" +
       s"&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}"
   }
-  val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
-  "getFinancialDetails" when {
+  Table(
+    ("API Regime", "Enrolment Key"),
+    ("VATC", EnrolmentKey(VAT, "123456789")),
+    ("ITSA", EnrolmentKey(ITSA, "1234567890"))
+  ).forEvery { (apiRegime, enrolmentKey) =>
 
-    val getFinancialDetailsModel: FinancialDetails = FinancialDetails(
-      documentDetails = Some(Seq(DocumentDetails(
-        chargeReferenceNumber = Some("XM002610011594"),
-        documentOutstandingAmount = Some(543.21),
-        lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))),
-        documentTotalAmount = Some(100.00),
-        issueDate = Some(LocalDate.of(2022, 1, 1)))
-      )),
-      totalisation = Some(FinancialDetailsTotalisation(
-        regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
-        interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
-      ))
-    )
+    s"getFinancialDetails for $apiRegime" when {
+      val getFinancialDetailsModel: FinancialDetails = FinancialDetails(
+        documentDetails = Some(Seq(DocumentDetails(
+          chargeReferenceNumber = Some("XM002610011594"),
+          documentOutstandingAmount = Some(543.21),
+          lineItemDetails = Some(Seq(LineItemDetails(Some(MainTransactionEnum.VATReturnFirstLPP)))),
+          documentTotalAmount = Some(100.00),
+          issueDate = Some(LocalDate.of(2022, 1, 1)))
+        )),
+        totalisation = Some(FinancialDetailsTotalisation(
+          regimeTotalisations = Some(RegimeTotalisation(totalAccountOverdue = Some(1000))),
+          interestTotalisations = Some(InterestTotalisation(totalAccountPostedInterest = Some(12.34), totalAccountAccruingInterest = Some(43.21)))
+        ))
+      )
 
-    "call the connector and return a successful result" in {
-      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam", Some(getFinancialDetailsAsJson.toString()))
-      val result = await(service.getFinancialDetails(vrn123456789, None))
-      result.isRight shouldBe true
-      result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
-    }
+      "call the connector and return a successful result" in {
+        mockStubResponseForGetFinancialDetails(Status.OK, s"${enrolmentKey.keyType.name}/${enrolmentKey.key}/$apiRegime?$financialDataQueryParam", Some(getFinancialDetailsAsJson.toString()))
+        val result = await(service.getFinancialDetails(enrolmentKey, None))
+        result.isRight shouldBe true
+        result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
+      }
 
-    "call the connector and return a successful result - passing custom parameters when defined" in {
-      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?foo=bar&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}",
-        Some(getFinancialDetailsAsJson.toString()))
-      val result = await(service.getFinancialDetails(vrn123456789, Some("?foo=bar")))
-      result.isRight shouldBe true
-      result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
-    }
+      "call the connector and return a successful result - passing custom parameters when defined" in {
+        mockStubResponseForGetFinancialDetails(Status.OK, s"${enrolmentKey.keyType.name}/${enrolmentKey.key}/$apiRegime?foo=bar&dateType=POSTING&dateFrom=${LocalDate.now().minusYears(2).toString}&dateTo=${LocalDate.now().toString}",
+          Some(getFinancialDetailsAsJson.toString()))
+        val result = await(service.getFinancialDetails(enrolmentKey, Some("?foo=bar")))
+        result.isRight shouldBe true
+        result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
+      }
 
-    s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
-      mockStubResponseForGetFinancialDetails(Status.OK, s"VRN/123456789/VATC?$financialDataQueryParam", Some(
-        """
+      s"the response body is not well formed: $GetFinancialDetailsMalformed" in {
+        mockStubResponseForGetFinancialDetails(Status.OK, s"${enrolmentKey.keyType.name}/${enrolmentKey.key}/$apiRegime?$financialDataQueryParam", Some(
+          """
           {
            "documentDetails": [
             {
@@ -81,34 +86,35 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
            ]
           }
           """))
-      val result = await(service.getFinancialDetails(vrn123456789, None))
-      result.isLeft shouldBe true
-      result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
-    }
+        val result = await(service.getFinancialDetails(enrolmentKey, None))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsMalformed
+      }
 
-    s"the response body contains NO_DATA_FOUND for 404 response - returning $GetFinancialDetailsNoContent" in {
-      val noDataFoundBody =
-        """
-          |{
-          | "failures":[
-          |   {
-          |     "code": "NO_DATA_FOUND",
-          |     "reason": "This is a reason"
-          |   }
-          | ]
-          |}
-          |""".stripMargin
-      mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"VRN/123456789/VATC?$financialDataQueryParam", Some(noDataFoundBody))
-      val result = await(service.getFinancialDetails(vrn123456789, None))
-      result.isLeft shouldBe true
-      result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
-    }
+      s"the response body contains NO_DATA_FOUND for 404 response - returning $GetFinancialDetailsNoContent" in {
+        val noDataFoundBody =
+          """
+            |{
+            | "failures":[
+            |   {
+            |     "code": "NO_DATA_FOUND",
+            |     "reason": "This is a reason"
+            |   }
+            | ]
+            |}
+            |""".stripMargin
+        mockStubResponseForGetFinancialDetails(Status.NOT_FOUND, s"${enrolmentKey.keyType.name}/${enrolmentKey.key}/$apiRegime?$financialDataQueryParam", Some(noDataFoundBody))
+        val result = await(service.getFinancialDetails(enrolmentKey, None))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetFinancialDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetFinancialDetailsNoContent
+      }
 
-    s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
-      mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"VRN/123456789/VATC?$financialDataQueryParam")
-      val result = await(service.getFinancialDetails(vrn123456789, None))
-      result.isLeft shouldBe true
-      result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
+      s"an unknown response is returned from the connector - $GetFinancialDetailsFailureResponse" in {
+        mockStubResponseForGetFinancialDetails(Status.IM_A_TEAPOT, s"${enrolmentKey.keyType.name}/${enrolmentKey.key}/$apiRegime?$financialDataQueryParam")
+        val result = await(service.getFinancialDetails(enrolmentKey, None))
+        result.isLeft shouldBe true
+        result.left.getOrElse(GetFinancialDetailsFailureResponse(INTERNAL_SERVER_ERROR)) shouldBe GetFinancialDetailsFailureResponse(Status.IM_A_TEAPOT)
+      }
     }
   }
 }
