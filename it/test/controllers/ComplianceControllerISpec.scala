@@ -30,41 +30,51 @@ class ComplianceControllerISpec extends IntegrationSpecCommonBase with Complianc
   }
 
   Table(
-    ("Regime", "API Path", "Follow Redirects"),
-    ("Legacy VAT", "/compliance/des/compliance-data?vrn=123456789&", true),
-    ("VAT", "/vat/compliance/data/vrn/123456789?", false)
-  ).forEvery { (regime, apiPath, followRedirects) =>
-    s"getComplianceData $regime" should {
+    ("API Regime", "ID Type", "ID", "API Path"),
+    ("VATC", "vrn", "123456789", "vat"),
+    ("ITSA", "utr", "1234567890", "itsa")
+  ).forEvery { (desRegime, idType, id, apiRegime) =>
+    val apiPath = s"/$apiRegime/compliance/data/$idType/$id?"
+
+    s"getComplianceData $desRegime" should {
       "return 200 with the associated model when the call succeeds" in new Setup {
-        mockResponseForComplianceDataFromDES(OK, "123456789", "2020-01-31", "2020-12-31", hasBody = true)
-        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").withFollowRedirects(followRedirects).get())
+        mockResponseForComplianceDataFromDES(OK, desRegime, idType, id, "2020-01-31", "2020-12-31", hasBody = true)
+        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").get())
         result.status shouldBe OK
-        Json.parse(result.body) shouldBe compliancePayloadAsJson
+        Json.parse(result.body) shouldBe compliancePayloadAsJson(idType, id)
       }
 
       "return 400 when the downstream service returns 400" in new Setup {
-        mockResponseForComplianceDataFromDES(BAD_REQUEST, "123456789", "2020-01-31", "2020-12-31")
-        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").withFollowRedirects(followRedirects).get())
+        mockResponseForComplianceDataFromDES(BAD_REQUEST, desRegime, idType, id, "2020-01-31", "2020-12-31")
+        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").get())
         result.status shouldBe BAD_REQUEST
       }
 
       "return 404 when the downstream service has no data for the VRN" in new Setup {
-        mockResponseForComplianceDataFromDES(NOT_FOUND, "123456789", "2020-01-31", "2020-12-31")
-        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").withFollowRedirects(followRedirects).get())
+        mockResponseForComplianceDataFromDES(NOT_FOUND, desRegime, idType, id, "2020-01-31", "2020-12-31")
+        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").get())
         result.status shouldBe NOT_FOUND
       }
 
       "return 500 when the downstream service has returns 500" in new Setup {
-        mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, "123456789", "2020-01-31", "2020-12-31")
-        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").withFollowRedirects(followRedirects).get())
+        mockResponseForComplianceDataFromDES(INTERNAL_SERVER_ERROR, desRegime, idType, id, "2020-01-31", "2020-12-31")
+        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").get())
         result.status shouldBe INTERNAL_SERVER_ERROR
       }
 
       "return 503 when the downstream service has returns 503" in new Setup {
-        mockResponseForComplianceDataFromDES(SERVICE_UNAVAILABLE, "123456789", "2020-01-31", "2020-12-31")
-        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").withFollowRedirects(followRedirects).get())
+        mockResponseForComplianceDataFromDES(SERVICE_UNAVAILABLE, desRegime, idType, id, "2020-01-31", "2020-12-31")
+        val result = await(buildClientForRequestToApp(uri = s"${apiPath}fromDate=2020-01-31&toDate=2020-12-31").get())
         result.status shouldBe SERVICE_UNAVAILABLE
       }
+    }
+  }
+
+  s"getComplianceData legacy endpoint" should {
+    "redirect to the new endpoint" in new Setup {
+      val result = await(buildClientForRequestToApp(uri = s"/compliance/des/compliance-data?vrn=123456789&fromDate=2020-01-31&toDate=2020-12-31").get())
+      result.status shouldBe SEE_OTHER
+      result.header("Location") shouldBe Some("/penalties/VAT/compliance/data/VRN/123456789?fromDate=2020-01-31&toDate=2020-12-31")
     }
   }
 }

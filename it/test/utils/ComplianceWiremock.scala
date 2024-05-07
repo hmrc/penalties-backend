@@ -21,14 +21,14 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.{JsValue, Json}
 
 trait ComplianceWiremock {
-  val complianceSeqPayloadAsJson: JsValue = Json.parse(
-    """
+  def complianceSeqPayloadAsJson(idType: String, id: String): JsValue = Json.parse(
+    s"""
       |{
       |   "obligations": [
       |     {
       |			"identification": {
-      |				"referenceNumber": "123456789",
-      |				"referenceType": "VRN"
+      |				"referenceNumber": "$id",
+      |				"referenceType": "${idType.toUpperCase}"
       |			},
       |			"obligationDetails": [
       |				{
@@ -52,12 +52,12 @@ trait ComplianceWiremock {
       |}
       |""".stripMargin)
 
-  val compliancePayloadAsJson: JsValue = Json.parse(
-    """
+  def compliancePayloadAsJson(idType: String, id: String): JsValue = Json.parse(
+    s"""
       |{
       |			"identification": {
-      |				"referenceNumber": "123456789",
-      |				"referenceType": "VRN"
+      |				"referenceNumber": "$id",
+      |				"referenceType": "${idType.toUpperCase}"
       |			},
       |			"obligationDetails": [
       |				{
@@ -80,22 +80,22 @@ trait ComplianceWiremock {
       |""".stripMargin)
 
 
-  def mockResponseForComplianceDataFromDES(status: Int, vrn: String, fromDate: String, toDate: String,
+  def mockResponseForComplianceDataFromDES(status: Int, apiRegime: String, idType: String, id: String, fromDate: String, toDate: String,
                                            hasBody: Boolean = false, invalidBody: Boolean = false, optBody: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"))
+    stubFor(get(urlEqualTo(s"/enterprise/obligation-data/$idType/$id/$apiRegime?from=$fromDate&to=$toDate"))
       .willReturn(
         aResponse()
           .withStatus(status)
-          .withBody(if(invalidBody) "{}" else if(optBody.isDefined) optBody.get else if(hasBody) complianceSeqPayloadAsJson.toString() else "")
+          .withBody(if(invalidBody) "{}" else if(optBody.isDefined) optBody.get else if(hasBody) complianceSeqPayloadAsJson(idType, id).toString() else "")
       ))
   }
 
-  def mockResponseForComplianceDataFromStub(status: Int, vrn: String, fromDate: String, toDate: String): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/enterprise/obligation-data/vrn/$vrn/VATC?from=$fromDate&to=$toDate"))
+  def mockResponseForComplianceDataFromStub(status: Int, apiRegime: String, idType: String, id: String, fromDate: String, toDate: String): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalties-stub/enterprise/obligation-data/$idType/$id/$apiRegime?from=$fromDate&to=$toDate"))
       .willReturn(
         aResponse()
           .withStatus(status)
-          .withBody(complianceSeqPayloadAsJson.toString())
+          .withBody(complianceSeqPayloadAsJson(idType, id).toString())
       ))
   }
 }
