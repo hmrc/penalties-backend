@@ -328,8 +328,8 @@ trait ETMPWiremock {
       |""".stripMargin
   )
 
-  def mockStubResponseForGetPenaltyDetails(status: Int, vrn: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/VATC/VRN/$vrn"))
+  def mockStubResponseForGetPenaltyDetails(status: Int, apiRegime: String, idType: String, id: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/$apiRegime/$idType/$id"))
     .willReturn(
       aResponse()
         .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
@@ -337,8 +337,8 @@ trait ETMPWiremock {
     ))
   }
 
-  def mockResponseForGetPenaltyDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalty/details/VATC/VRN/$vatcUrl"))
+  def mockResponseForGetPenaltyDetails(status: Int, apiRegime: String, idType: String, vatcUrl: String, body: Option[String] = None): StubMapping = {
+    stubFor(get(urlEqualTo(s"/penalty/details/$apiRegime/$idType/$vatcUrl"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
