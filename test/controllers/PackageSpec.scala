@@ -27,12 +27,12 @@ import scala.concurrent.Await.result
 import scala.concurrent.Future
 import scala.concurrent.Future.{failed, successful}
 import scala.concurrent.duration.Duration.Inf
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 class PackageSpec extends AnyWordSpec with Matchers {
 
   "tryPlus.andThen" should {
-    val someKey = EnrolmentKey(TaxRegime.ITSA, EnrolmentKey.UTR, "1234567890")
+    val someKey = EnrolmentKey(TaxRegime.ITSA, EnrolmentKey.NINO, "AB123456C")
     val good: Future[Result] = successful(Results.Ok("doubleplusgood"))
     val fail: Future[Result] = failed(new Exception("ungood"))
 
@@ -62,14 +62,14 @@ class PackageSpec extends AnyWordSpec with Matchers {
     "Fail for an invalid VAT VRN" in {
       controllers.composeEnrolmentKey("VAT","VRN","FOOBAR") shouldFailWith "Invalid VAT VRN: FOOBAR"
     }
-    "Fail for an invalid ITSA UTR" in {
-      controllers.composeEnrolmentKey("ITSA","UTR","FOOBAR") shouldFailWith "Invalid ITSA UTR: FOOBAR"
+    "Fail for an invalid ITSA NINO" in {
+      controllers.composeEnrolmentKey("ITSA","NINO","FOOBAR") shouldFailWith "Invalid ITSA NINO: FOOBAR"
     }
     "Support a valid VAT VRN" in {
       controllers.composeEnrolmentKey("VAT","VRN","123456789") shouldBe Success(EnrolmentKey(TaxRegime.VAT, EnrolmentKey.VRN, "123456789"))
     }
-    "Support a valid ITSA UTR" in {
-      controllers.composeEnrolmentKey("ITSA","UTR","1234567890") shouldBe Success(EnrolmentKey(TaxRegime.ITSA, EnrolmentKey.UTR, "1234567890"))
+    "Support a valid ITSA NINO" in {
+      controllers.composeEnrolmentKey("ITSA","NINO","AB123456C") shouldBe Success(EnrolmentKey(TaxRegime.ITSA, EnrolmentKey.NINO, "AB123456C"))
     }
   }
 
@@ -77,8 +77,8 @@ class PackageSpec extends AnyWordSpec with Matchers {
     "Support a valid VAT VRN implicitly" in {
       controllers.composeEnrolmentKey("VAT","123456789") shouldBe Success(EnrolmentKey(TaxRegime.VAT, EnrolmentKey.VRN, "123456789"))
     }
-    "Support a valid ITSA UTR implicitly" in {
-      controllers.composeEnrolmentKey("ITSA","1234567890") shouldBe Success(EnrolmentKey(TaxRegime.ITSA, EnrolmentKey.UTR, "1234567890"))
+    "Support a valid ITSA NINO implicitly" in {
+      controllers.composeEnrolmentKey("ITSA","AB123456C") shouldBe Success(EnrolmentKey(TaxRegime.ITSA, EnrolmentKey.NINO, "AB123456C"))
     }
   }
 

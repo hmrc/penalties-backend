@@ -41,7 +41,7 @@ class ComplianceServiceISpec extends IntegrationSpecCommonBase with ComplianceWi
   Table(
     ("API Regime", "ID Type", "Enrolment Key"),
     ("VATC", "vrn", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", "utr", EnrolmentKey(ITSA, "1234567890"))
+    ("ITSA", "nino", EnrolmentKey(ITSA, "AB123456C"))
   ).forEvery { (apiRegime, idType, enrolmentKey) =>
 
     s"getComplianceData for $apiRegime" should {

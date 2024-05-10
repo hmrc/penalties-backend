@@ -19,8 +19,8 @@ package connectors.getFinancialDetails
 import config.AppConfig
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsResponse}
 import models.EnrolmentKey
-import models.EnrolmentKey.{UTR, VRN}
-import models.TaxRegime.{CT, ITSA, VAT}
+import models.EnrolmentKey._
+import models.TaxRegime.{ITSA, VAT}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
@@ -61,8 +61,8 @@ class GetFinancialDetailsConnector @Inject()(httpClient: HttpClient,
 
   private def getFinancialDetailsUrl(enrolmentKey: EnrolmentKey) = enrolmentKey match {
     case EnrolmentKey(VAT, VRN, vrn) => appConfig.getVatFinancialDetailsUrl(vrn)
-    case EnrolmentKey(ITSA, UTR, utr) => appConfig.getItsaFinancialDetailsUrl(utr)
-    case EnrolmentKey(CT, UTR, utr) => appConfig.getCtFinancialDetailsUrl(utr)
+    case EnrolmentKey(ITSA, NINO, utr) => appConfig.getItsaFinancialDetailsUrl(utr)
+    //case EnrolmentKey(CT, UTR, utr) => appConfig.getCtFinancialDetailsUrl(utr)
     case _ => throw new Exception(s"No getFinancialDetails URL available for $enrolmentKey")
   }
 

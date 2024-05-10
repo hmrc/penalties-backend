@@ -19,8 +19,8 @@ package connectors
 import config.AppConfig
 import connectors.parsers.ComplianceParser.{CompliancePayloadFailureResponse, CompliancePayloadResponse}
 import models.EnrolmentKey
-import models.EnrolmentKey.{UTR, VRN}
-import models.TaxRegime.{CT, ITSA, VAT}
+import models.EnrolmentKey._
+import models.TaxRegime.{ITSA, VAT}
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
 import utils.Logger.logger
@@ -41,8 +41,8 @@ class ComplianceConnector @Inject()(httpClient: HttpClient,
     )
     val url = enrolmentKey match {
       case EnrolmentKey(VAT, VRN, vrn) => appConfig.getVatComplianceDataUrl(vrn, fromDate, toDate)
-      case EnrolmentKey(ITSA, UTR, utr) => appConfig.getItsaComplianceDataUrl(utr, fromDate, toDate)
-      case EnrolmentKey(CT, UTR, utr) => appConfig.getCtComplianceDataUrl(utr, fromDate, toDate)
+      case EnrolmentKey(ITSA, NINO, nino) => appConfig.getItsaComplianceDataUrl(nino, fromDate, toDate)
+      //case EnrolmentKey(CT, UTR, utr) => appConfig.getCtComplianceDataUrl(utr, fromDate, toDate)
       case _ => throw new Exception(s"No getComplianceData URL available for $enrolmentKey")
     }
     logger.debug(s"[ComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")

@@ -17,7 +17,7 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
+import config.featureSwitches.FeatureSwitching
 import models.EnrolmentKey
 import models.TaxRegime.{ITSA, VAT}
 import models.appeals.MultiplePenaltiesData
@@ -299,7 +299,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
   Table(
     ("API Regime", "Enrolment Key"),
     ("VATC", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", EnrolmentKey(ITSA, "1234567890"))
+    ("ITSA", EnrolmentKey(ITSA, "AB123456C"))
   ).forEvery { (apiRegime, enrolmentKey) =>
 
     s"getAppealsDataForLateSubmissionPenalty for $apiRegime" should {

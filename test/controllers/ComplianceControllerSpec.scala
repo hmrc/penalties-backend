@@ -43,7 +43,7 @@ class ComplianceControllerSpec extends SpecBase {
       when(mockService.getComplianceData(Matchers.any(), Matchers.any(),
         Matchers.any())(Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(Left(INTERNAL_SERVER_ERROR)))
-      val result: Future[Result] = controller.getComplianceData("ITSA", "UTR", "1234567890", "2020-01-01", "2020-12-31")(fakeRequest)
+      val result: Future[Result] = controller.getComplianceData("ITSA", "NINO", "AB123456C", "2020-01-01", "2020-12-31")(fakeRequest)
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
 
@@ -51,8 +51,8 @@ class ComplianceControllerSpec extends SpecBase {
       val compliancePayloadAsModel: CompliancePayload = CompliancePayload(
         identification = Some(ObligationIdentification(
           incomeSourceType = None,
-          referenceNumber = "123456789",
-          referenceType = "VRN"
+          referenceNumber = "AB123456C",
+          referenceType = "NINO"
         )),
         obligationDetails = Seq(
           ObligationDetail(
@@ -76,7 +76,7 @@ class ComplianceControllerSpec extends SpecBase {
       when(mockService.getComplianceData(Matchers.any(), Matchers.any(),
         Matchers.any())(Matchers.any(), Matchers.any()))
         .thenReturn(Future.successful(Right(compliancePayloadAsModel)))
-      val result: Future[Result] = controller.getComplianceData("ITSA", "UTR", "1234567890", "2020-01-01", "2020-12-31")(fakeRequest)
+      val result: Future[Result] = controller.getComplianceData("ITSA", "NINO", "AB123456C", "2020-01-01", "2020-12-31")(fakeRequest)
       status(result) shouldBe OK
       contentAsJson(result) shouldBe Json.toJson(compliancePayloadAsModel)
     }

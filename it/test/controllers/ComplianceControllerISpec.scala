@@ -32,7 +32,7 @@ class ComplianceControllerISpec extends IntegrationSpecCommonBase with Complianc
   Table(
     ("API Regime", "ID Type", "ID", "API Path"),
     ("VATC", "vrn", "123456789", "vat"),
-    ("ITSA", "utr", "1234567890", "itsa")
+    ("ITSA", "nino", "AB123456C", "itsa")
   ).forEvery { (desRegime, idType, id, apiRegime) =>
     val apiPath = s"/$apiRegime/compliance/data/$idType/$id?"
 

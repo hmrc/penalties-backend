@@ -17,7 +17,7 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo}
-import config.featureSwitches.FeatureSwitching
+import config.featureSwitches.{FeatureSwitch, FeatureSwitching}
 import models.EnrolmentKey
 import models.TaxRegime.{ITSA, VAT}
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -448,7 +448,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
   Table(
     ("API Regime", "Enrolment Key"),
     ("VATC", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", EnrolmentKey(ITSA, "1234567890"))
+    ("ITSA", EnrolmentKey(ITSA, "AB123456C"))
   ).forEvery { (apiRegime, enrolmentKey) =>
     val etmpUri = s"/etmp/penalties/$enrolmentKey"
     val financialDataUri = s"${enrolmentKey.keyType}/${enrolmentKey.key}/$apiRegime"

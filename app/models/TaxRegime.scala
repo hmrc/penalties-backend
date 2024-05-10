@@ -23,7 +23,7 @@ object TaxRegime extends Enumeration {
 
     val VAT: Value = Value("VAT")
     val ITSA: Value = Value("ITSA")
-    val CT: Value = Value("CT")
+    //val CT: Value = Value("CT")
 
     /**
      * Support using this enum in route paths

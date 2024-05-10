@@ -42,7 +42,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
   Table(
     ("API Regime", "Enrolment Key"),
     ("VATC", EnrolmentKey(VAT, "123456789")),
-    ("ITSA", EnrolmentKey(ITSA, "1234567890"))
+    ("ITSA", EnrolmentKey(ITSA, "AB123456C"))
   ).forEvery { (apiRegime, enrolmentKey) =>
 
     s"getPenaltyDetails for $apiRegime" should {

@@ -20,8 +20,8 @@ import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
 import models.EnrolmentKey
-import models.EnrolmentKey.{UTR, VRN}
-import models.TaxRegime.{CT, ITSA, VAT}
+import models.EnrolmentKey._
+import models.TaxRegime.{ITSA, VAT}
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HttpReads.Implicits._
@@ -70,8 +70,8 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
 
   private def getPenaltyDetailsUrl(enrolmentKey: EnrolmentKey) = enrolmentKey match {
     case EnrolmentKey(VAT, VRN, vrn) => appConfig.getVatPenaltyDetailsUrl + vrn
-    case EnrolmentKey(ITSA, UTR, utr) => appConfig.getItsaPenaltyDetailsUrl + utr
-    case EnrolmentKey(CT, UTR, utr) => appConfig.getCtPenaltyDetailsUrl + utr
+    case EnrolmentKey(ITSA, NINO, nino) => appConfig.getItsaPenaltyDetailsUrl + nino
+    //case EnrolmentKey(CT, UTR, utr) => appConfig.getCtPenaltyDetailsUrl + utr
     case _ => throw new Exception(s"No getPenaltyDetails URL available for $enrolmentKey")
   }
 

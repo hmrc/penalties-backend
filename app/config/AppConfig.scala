@@ -85,8 +85,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   }
 
   def getVatPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "VATC/VRN/"
-  def getItsaPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "ITSA/UTR/"
-  def getCtPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "CT/UTR/"
+  def getItsaPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "ITSA/NINO/"
+  //def getCtPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "CT/UTR/"
 
   private def getFinancialDetailsUrl: String = {
     if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/penalties-stub/penalty/financial-data/"
@@ -95,9 +95,9 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   def getVatFinancialDetailsUrl(vrn: String): String = getFinancialDetailsUrl + s"VRN/$vrn/VATC"
 
-  def getItsaFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl + s"UTR/$utr/ITSA"
+  def getItsaFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl + s"NINO/$utr/ITSA"
 
-  def getCtFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl + s"UTR/$utr/CT"
+  //def getCtFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl + s"UTR/$utr/CT"
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
     if (!isEnabled(CallPEGA)) stubBase + s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
@@ -119,11 +119,11 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   def getVatComplianceDataUrl(vrn: String, fromDate: String, toDate: String): String =
      s"${getComplianceDataUrl}vrn/$vrn/VATC?from=$fromDate&to=$toDate"
 
-  def getItsaComplianceDataUrl(utr: String, fromDate: String, toDate: String): String =
-    s"${getComplianceDataUrl}utr/$utr/ITSA?from=$fromDate&to=$toDate"
+  def getItsaComplianceDataUrl(nino: String, fromDate: String, toDate: String): String =
+    s"${getComplianceDataUrl}nino/$nino/ITSA?from=$fromDate&to=$toDate"
 
-  def getCtComplianceDataUrl(utr: String, fromDate: String, toDate: String): String =
-    s"${getComplianceDataUrl}utr/$utr/CT?from=$fromDate&to=$toDate"
+  //def getCtComplianceDataUrl(utr: String, fromDate: String, toDate: String): String =
+  //  s"${getComplianceDataUrl}utr/$utr/CT?from=$fromDate&to=$toDate"
 
   def getMimeType(mimeType: String): Option[String] = config.getOptional[String](s"files.extensions.$mimeType")
 }
