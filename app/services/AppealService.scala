@@ -129,9 +129,12 @@ class AppealService @Inject()(appealsConnector: PEGAConnector,
     if (sanitisedFileName.length > appConfig.maximumFilenameLength) {
       if (sanitisedFileName.contains(".")) {
         val fileRegex = "^(.*)(\\.\\w{1,4})$".r
-        val fileRegex(fileNameMain, fileExtension) = sanitisedFileName
-        logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
-        fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength)) ++ fileExtension
+        sanitisedFileName match {
+          case fileRegex(fileNameMain, fileExtension) =>
+            logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${fileNameMain.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
+            fileNameMain.substring(0, Math.min(fileNameMain.length(), appConfig.maximumFilenameLength)) ++ fileExtension
+          case _ => throw new Exception(s"Bad filename: $sanitisedFileName")
+        }
       } else {
         logger.info(s"[AppealService][sanitisedAndTruncatedFileName] File name length: ${sanitisedFileName.length} with reference of: $reference, truncating to ${appConfig.maximumFilenameLength}")
         sanitisedFileName.substring(0, Math.min(sanitisedFileName.length(), appConfig.maximumFilenameLength))
