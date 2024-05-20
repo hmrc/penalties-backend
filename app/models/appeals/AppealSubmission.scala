@@ -44,8 +44,8 @@ case class BereavementAppealInformation(
 object BereavementAppealInformation {
   implicit val bereavementAppealInformationFormatter: OFormat[BereavementAppealInformation] = Json.format[BereavementAppealInformation]
 
-  val bereavementAppealWrites: Writes[BereavementAppealInformation] = bereavementAppealInformationFormatter.contramap(x => x.copy(
-    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  val bereavementAppealWrites: Writes[BereavementAppealInformation] = bereavementAppealInformationFormatter.contramap(orig => orig.copy(
+    startDateOfEvent = addUtcTimeZone(orig.startDateOfEvent)
   ))
 }
 
@@ -64,8 +64,8 @@ case class CrimeAppealInformation(
 object CrimeAppealInformation {
   implicit val crimeAppealInformationFormatter: OFormat[CrimeAppealInformation] = Json.format[CrimeAppealInformation]
 
-  val crimeAppealWrites: Writes[CrimeAppealInformation] = crimeAppealInformationFormatter.contramap(x => x.copy(
-    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  val crimeAppealWrites: Writes[CrimeAppealInformation] = crimeAppealInformationFormatter.contramap(orig => orig.copy(
+    startDateOfEvent = addUtcTimeZone(orig.startDateOfEvent)
   ))
 }
 
@@ -83,8 +83,8 @@ case class FireOrFloodAppealInformation(
 object FireOrFloodAppealInformation {
   implicit val fireOrFloodAppealInformationFormatter: OFormat[FireOrFloodAppealInformation] = Json.format[FireOrFloodAppealInformation]
 
-  val fireOrFloodAppealWrites: Writes[FireOrFloodAppealInformation] = fireOrFloodAppealInformationFormatter.contramap(x => x.copy(
-    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  val fireOrFloodAppealWrites: Writes[FireOrFloodAppealInformation] = fireOrFloodAppealInformationFormatter.contramap(orig => orig.copy(
+    startDateOfEvent = addUtcTimeZone(orig.startDateOfEvent)
   ))
 }
 
@@ -102,8 +102,8 @@ case class LossOfStaffAppealInformation(
 object LossOfStaffAppealInformation {
   implicit val lossOfStaffAppealInformationFormatter: OFormat[LossOfStaffAppealInformation] = Json.format[LossOfStaffAppealInformation]
 
-  val lossOfStaffAppealWrites: Writes[LossOfStaffAppealInformation] = lossOfStaffAppealInformationFormatter.contramap(x => x.copy(
-    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  val lossOfStaffAppealWrites: Writes[LossOfStaffAppealInformation] = lossOfStaffAppealInformationFormatter.contramap(orig => orig.copy(
+    startDateOfEvent = addUtcTimeZone(orig.startDateOfEvent)
   ))
 }
 
@@ -122,8 +122,8 @@ case class TechnicalIssuesAppealInformation(
 object TechnicalIssuesAppealInformation {
   implicit val technicalIssuesAppealInformationFormatter: OFormat[TechnicalIssuesAppealInformation] = Json.format[TechnicalIssuesAppealInformation]
 
-  val technicalIssuesAppealWrites: Writes[TechnicalIssuesAppealInformation] = technicalIssuesAppealInformationFormatter.contramap(x => x.copy(
-    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent), endDateOfEvent = addUtcTimeZone(x.endDateOfEvent)
+  val technicalIssuesAppealWrites: Writes[TechnicalIssuesAppealInformation] = technicalIssuesAppealInformationFormatter.contramap(orig => orig.copy(
+    startDateOfEvent = addUtcTimeZone(orig.startDateOfEvent), endDateOfEvent = addUtcTimeZone(orig.endDateOfEvent)
   ))
 }
 
@@ -144,14 +144,14 @@ case class HealthAppealInformation(
 object HealthAppealInformation {
   implicit val healthAppealInformationFormatter: OFormat[HealthAppealInformation] = Json.format[HealthAppealInformation]
 
-  val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformationFormatter.transform{jso: JsObject =>
+  val healthAppealWrites: Writes[HealthAppealInformation] = healthAppealInformationFormatter.transform{jso: JsObject =>
     jso.-("hospitalStayInvolved")
-  }.contramap(x => x.copy(
-    reasonableExcuse = if (x.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth",
-    startDateOfEvent = x.startDateOfEvent.map(addUtcTimeZone),
-    endDateOfEvent = x.endDateOfEvent.map(addUtcTimeZone),
-    eventOngoing = if (x.hospitalStayInvolved) x.eventOngoing else None,
-  )))
+  }.contramap(orig => orig.copy(
+    reasonableExcuse = if (orig.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth",
+    startDateOfEvent = orig.startDateOfEvent.map(addUtcTimeZone),
+    endDateOfEvent = orig.endDateOfEvent.map(addUtcTimeZone),
+    eventOngoing = if (orig.hospitalStayInvolved) orig.eventOngoing else None,
+  ))
 }
 
 case class OtherAppealInformation(
@@ -171,8 +171,8 @@ object OtherAppealInformation {
   implicit val evidenceFormatter: OFormat[Evidence] = Evidence.format
   implicit val otherAppealInformationFormatter: OFormat[OtherAppealInformation] = Json.format[OtherAppealInformation]
 
-  val otherAppealInformationWrites: Writes[OtherAppealInformation] = otherAppealInformationFormatter.contramap(x => x.copy(
-    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  val otherAppealInformationWrites: Writes[OtherAppealInformation] = otherAppealInformationFormatter.contramap(orig => orig.copy(
+    startDateOfEvent = addUtcTimeZone(orig.startDateOfEvent)
   ))
 }
 
