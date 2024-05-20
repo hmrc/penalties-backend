@@ -19,7 +19,7 @@ package utils
 import config.featureSwitches.FeatureSwitching
 import play.api.Configuration
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -39,4 +39,6 @@ object DateHelper {
   }
 
   val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
+  def addUtcTimeZone(timestamp: String): String = LocalDateTime.parse(timestamp).toInstant(ZoneOffset.UTC).toString
 }

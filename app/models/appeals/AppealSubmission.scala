@@ -18,6 +18,7 @@ package models.appeals
 
 import models.upload.UploadJourney
 import play.api.libs.json._
+import utils.DateHelper.addUtcTimeZone
 
 import java.time.{LocalDateTime, ZoneOffset}
 
@@ -43,39 +44,9 @@ case class BereavementAppealInformation(
 object BereavementAppealInformation {
   implicit val bereavementAppealInformationFormatter: OFormat[BereavementAppealInformation] = Json.format[BereavementAppealInformation]
 
-  val bereavementAppealWrites: Writes[BereavementAppealInformation] = (bereavementAppealInformation: BereavementAppealInformation) => {
-    val startDateOfEventZoned: String = LocalDateTime.parse(bereavementAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
-    Json.obj(
-      "startDateOfEvent" -> startDateOfEventZoned,
-      "lateAppeal" -> bereavementAppealInformation.lateAppeal,
-      "reasonableExcuse" -> bereavementAppealInformation.reasonableExcuse,
-      "honestyDeclaration" -> bereavementAppealInformation.honestyDeclaration
-    ).deepMerge(
-      bereavementAppealInformation.statement.fold(
-        Json.obj()
-      )(
-        statement => Json.obj("statement" -> statement)
-      )
-    ).deepMerge(
-      bereavementAppealInformation.lateAppealReason.fold(
-        Json.obj()
-      )(
-        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
-      )
-    ).deepMerge(
-      bereavementAppealInformation.isClientResponsibleForSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
-      )
-    ).deepMerge(
-      bereavementAppealInformation.isClientResponsibleForLateSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
-      )
-    )
-  }
+  val bereavementAppealWrites: Writes[BereavementAppealInformation] = bereavementAppealInformationFormatter.contramap(x => x.copy(
+    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  ))
 }
 
 case class CrimeAppealInformation(
@@ -93,40 +64,9 @@ case class CrimeAppealInformation(
 object CrimeAppealInformation {
   implicit val crimeAppealInformationFormatter: OFormat[CrimeAppealInformation] = Json.format[CrimeAppealInformation]
 
-  val crimeAppealWrites: Writes[CrimeAppealInformation] = (crimeAppealInformation: CrimeAppealInformation) => {
-    val startDateOfEventZoned: String = LocalDateTime.parse(crimeAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
-    Json.obj(
-      "startDateOfEvent" -> startDateOfEventZoned,
-      "reportedIssueToPolice" -> crimeAppealInformation.reportedIssueToPolice,
-      "lateAppeal" -> crimeAppealInformation.lateAppeal,
-      "reasonableExcuse" -> crimeAppealInformation.reasonableExcuse,
-      "honestyDeclaration" -> crimeAppealInformation.honestyDeclaration
-    ).deepMerge(
-      crimeAppealInformation.statement.fold(
-        Json.obj()
-      )(
-        statement => Json.obj("statement" -> statement)
-      )
-    ).deepMerge(
-      crimeAppealInformation.lateAppealReason.fold(
-        Json.obj()
-      )(
-        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
-      )
-    ).deepMerge(
-      crimeAppealInformation.isClientResponsibleForSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
-      )
-    ).deepMerge(
-      crimeAppealInformation.isClientResponsibleForLateSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
-      )
-    )
-  }
+  val crimeAppealWrites: Writes[CrimeAppealInformation] = crimeAppealInformationFormatter.contramap(x => x.copy(
+    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  ))
 }
 
 case class FireOrFloodAppealInformation(
@@ -143,39 +83,9 @@ case class FireOrFloodAppealInformation(
 object FireOrFloodAppealInformation {
   implicit val fireOrFloodAppealInformationFormatter: OFormat[FireOrFloodAppealInformation] = Json.format[FireOrFloodAppealInformation]
 
-  val fireOrFloodAppealWrites: Writes[FireOrFloodAppealInformation] = (fireOrFloodAppealInformation: FireOrFloodAppealInformation) => {
-    val startDateOfEventZoned: String = LocalDateTime.parse(fireOrFloodAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
-    Json.obj(
-      "startDateOfEvent" -> startDateOfEventZoned,
-      "lateAppeal" -> fireOrFloodAppealInformation.lateAppeal,
-      "reasonableExcuse" -> fireOrFloodAppealInformation.reasonableExcuse,
-      "honestyDeclaration" -> fireOrFloodAppealInformation.honestyDeclaration
-    ).deepMerge(
-      fireOrFloodAppealInformation.statement.fold(
-        Json.obj()
-      )(
-        statement => Json.obj("statement" -> statement)
-      )
-    ).deepMerge(
-      fireOrFloodAppealInformation.lateAppealReason.fold(
-        Json.obj()
-      )(
-        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
-      )
-    ).deepMerge(
-      fireOrFloodAppealInformation.isClientResponsibleForSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
-      )
-    ).deepMerge(
-      fireOrFloodAppealInformation.isClientResponsibleForLateSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
-      )
-    )
-  }
+  val fireOrFloodAppealWrites: Writes[FireOrFloodAppealInformation] = fireOrFloodAppealInformationFormatter.contramap(x => x.copy(
+    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  ))
 }
 
 case class LossOfStaffAppealInformation(
@@ -192,39 +102,9 @@ case class LossOfStaffAppealInformation(
 object LossOfStaffAppealInformation {
   implicit val lossOfStaffAppealInformationFormatter: OFormat[LossOfStaffAppealInformation] = Json.format[LossOfStaffAppealInformation]
 
-  val lossOfStaffAppealWrites: Writes[LossOfStaffAppealInformation] = (lossOfStaffAppealInformation: LossOfStaffAppealInformation) => {
-    val startDateOfEventZoned: String = LocalDateTime.parse(lossOfStaffAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
-    Json.obj(
-      "startDateOfEvent" -> startDateOfEventZoned,
-      "lateAppeal" -> lossOfStaffAppealInformation.lateAppeal,
-      "reasonableExcuse" -> lossOfStaffAppealInformation.reasonableExcuse,
-      "honestyDeclaration" -> lossOfStaffAppealInformation.honestyDeclaration
-    ).deepMerge(
-      lossOfStaffAppealInformation.statement.fold(
-        Json.obj()
-      )(
-        statement => Json.obj("statement" -> statement)
-      )
-    ).deepMerge(
-      lossOfStaffAppealInformation.lateAppealReason.fold(
-        Json.obj()
-      )(
-        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
-      )
-    ).deepMerge(
-      lossOfStaffAppealInformation.isClientResponsibleForSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
-      )
-    ).deepMerge(
-      lossOfStaffAppealInformation.isClientResponsibleForLateSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
-      )
-    )
-  }
+  val lossOfStaffAppealWrites: Writes[LossOfStaffAppealInformation] = lossOfStaffAppealInformationFormatter.contramap(x => x.copy(
+    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  ))
 }
 
 case class TechnicalIssuesAppealInformation(
@@ -242,41 +122,9 @@ case class TechnicalIssuesAppealInformation(
 object TechnicalIssuesAppealInformation {
   implicit val technicalIssuesAppealInformationFormatter: OFormat[TechnicalIssuesAppealInformation] = Json.format[TechnicalIssuesAppealInformation]
 
-  val technicalIssuesAppealWrites: Writes[TechnicalIssuesAppealInformation] = (technicalIssuesAppealInformation: TechnicalIssuesAppealInformation) => {
-    val startDateOfEventZoned: String = LocalDateTime.parse(technicalIssuesAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
-    val endDateOfEventZoned: String = LocalDateTime.parse(technicalIssuesAppealInformation.endDateOfEvent).toInstant(ZoneOffset.UTC).toString
-    Json.obj(
-      "startDateOfEvent" -> startDateOfEventZoned,
-      "endDateOfEvent" -> endDateOfEventZoned,
-      "lateAppeal" -> technicalIssuesAppealInformation.lateAppeal,
-      "reasonableExcuse" -> technicalIssuesAppealInformation.reasonableExcuse,
-      "honestyDeclaration" -> technicalIssuesAppealInformation.honestyDeclaration
-    ).deepMerge(
-      technicalIssuesAppealInformation.statement.fold(
-        Json.obj()
-      )(
-        statement => Json.obj("statement" -> statement)
-      )
-    ).deepMerge(
-      technicalIssuesAppealInformation.lateAppealReason.fold(
-        Json.obj()
-      )(
-        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
-      )
-    ).deepMerge(
-      technicalIssuesAppealInformation.isClientResponsibleForSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
-      )
-    ).deepMerge(
-      technicalIssuesAppealInformation.isClientResponsibleForLateSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
-      )
-    )
-  }
+  val technicalIssuesAppealWrites: Writes[TechnicalIssuesAppealInformation] = technicalIssuesAppealInformationFormatter.contramap(x => x.copy(
+    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent), endDateOfEvent = addUtcTimeZone(x.endDateOfEvent)
+  ))
 }
 
 case class HealthAppealInformation(
@@ -295,6 +143,14 @@ case class HealthAppealInformation(
 
 object HealthAppealInformation {
   implicit val healthAppealInformationFormatter: OFormat[HealthAppealInformation] = Json.format[HealthAppealInformation]
+
+//  val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformationFormatter.transform{jso: JsObject =>
+//    jso.-("hospitalStayInvolved")
+//  }.contramap(x => x.copy(
+//    reasonableExcuse = if (x.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth",
+//    startDateOfEvent = x.startDateOfEvent.map(addUtcTimeZone),
+//    endDateOfEvent = x.endDateOfEvent.map(addUtcTimeZone),
+//  )))
 
   val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformation: HealthAppealInformation) => {
     val healthReason = if (healthAppealInformation.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth"
@@ -369,40 +225,9 @@ object OtherAppealInformation {
   implicit val evidenceFormatter: OFormat[Evidence] = Evidence.format
   implicit val otherAppealInformationFormatter: OFormat[OtherAppealInformation] = Json.format[OtherAppealInformation]
 
-  val otherAppealInformationWrites: Writes[OtherAppealInformation] = (otherAppealInformation: OtherAppealInformation) => {
-    val startDateOfEventZoned: String = LocalDateTime.parse(otherAppealInformation.startDateOfEvent).toInstant(ZoneOffset.UTC).toString
-    Json.obj(
-      "startDateOfEvent" -> startDateOfEventZoned,
-      "statement" -> otherAppealInformation.statement.get,
-      "lateAppeal" -> otherAppealInformation.lateAppeal,
-      "reasonableExcuse" -> otherAppealInformation.reasonableExcuse,
-      "honestyDeclaration" -> otherAppealInformation.honestyDeclaration
-    ).deepMerge(
-      otherAppealInformation.lateAppealReason.fold(
-        Json.obj()
-      )(
-        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
-      )
-    ).deepMerge(
-      otherAppealInformation.supportingEvidence.fold(
-        Json.obj()
-      )(
-        evidence => Json.obj("supportingEvidence" -> evidence)
-      )
-    ).deepMerge(
-      otherAppealInformation.isClientResponsibleForSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
-      )
-    ).deepMerge(
-      otherAppealInformation.isClientResponsibleForLateSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
-      )
-    )
-  }
+  val otherAppealInformationWrites: Writes[OtherAppealInformation] = otherAppealInformationFormatter.contramap(x => x.copy(
+    startDateOfEvent = addUtcTimeZone(x.startDateOfEvent)
+  ))
 }
 
 case class AppealSubmission(
