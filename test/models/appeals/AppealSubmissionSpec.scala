@@ -668,7 +668,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           result.get shouldBe HealthAppealInformation(
             startDateOfEvent = Some("2020-01-01T00:00:00"),
             endDateOfEvent = None,
-            eventOngoing = false,
+            eventOngoing = Some(false),
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
@@ -686,7 +686,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           result.get shouldBe HealthAppealInformation(
             startDateOfEvent = Some("2020-01-01T00:00:00"),
             endDateOfEvent = None,
-            eventOngoing = true,
+            eventOngoing = Some(true),
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
@@ -704,7 +704,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           result.get shouldBe HealthAppealInformation(
             startDateOfEvent = Some("2020-01-01T00:00:00"),
             endDateOfEvent = Some("2020-01-01T00:00:01"),
-            eventOngoing = false,
+            eventOngoing = Some(false),
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
@@ -858,7 +858,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val model = HealthAppealInformation(
           startDateOfEvent = Some("2020-01-01T00:00:00"),
           endDateOfEvent = Some("2020-01-01T00:00:01"),
-          eventOngoing = false,
+          eventOngoing = Some(false),
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
@@ -877,7 +877,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val model = HealthAppealInformation(
           startDateOfEvent = Some("2020-01-01T00:00:00"),
           endDateOfEvent = None,
-          eventOngoing = true,
+          eventOngoing = Some(true),
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
@@ -897,7 +897,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
         val model = HealthAppealInformation(
           endDateOfEvent = None,
           startDateOfEvent = Some("2020-01-01T00:00:00"),
-          eventOngoing = false,
+          eventOngoing = Some(false),
           statement = None,
           lateAppeal = false,
           lateAppealReason = None,
@@ -1124,7 +1124,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           appealInformation = HealthAppealInformation(
             endDateOfEvent = None,
             startDateOfEvent = Some("2020-01-01T00:00:00"),
-            eventOngoing = false,
+            eventOngoing = Some(false),
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
@@ -1151,7 +1151,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           appealInformation = HealthAppealInformation(
             startDateOfEvent = Some("2020-01-01T00:00:00"),
             endDateOfEvent = None,
-            eventOngoing = true,
+            eventOngoing = Some(true),
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
@@ -1178,7 +1178,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           appealInformation = HealthAppealInformation(
             startDateOfEvent = Some("2020-01-01T00:00:00"),
             endDateOfEvent = Some("2020-01-01T00:00:01"),
-            eventOngoing = false,
+            eventOngoing = Some(false),
             statement = None,
             lateAppeal = false,
             lateAppealReason = None,
@@ -1461,7 +1461,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             appealInformation = HealthAppealInformation(
               startDateOfEvent = Some("2020-01-01T00:00:00"),
               endDateOfEvent = Some("2020-01-01T00:00:01"),
-              eventOngoing = false,
+              eventOngoing = Some(false),
               statement = None,
               lateAppeal = true,
               lateAppealReason = Some("Reason"),
@@ -1510,7 +1510,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             appealInformation = HealthAppealInformation(
               startDateOfEvent = Some("2021-04-23T00:00:00"),
               endDateOfEvent = None,
-              eventOngoing = true,
+              eventOngoing = Some(true),
               statement = None,
               lateAppeal = true,
               lateAppealReason = Some("Reason"),
@@ -1558,7 +1558,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
             agentDetails = Some(AgentDetails(agentReferenceNo = "AGENT1", isExcuseRelatedToAgent = true)),
             appealInformation = HealthAppealInformation(
               endDateOfEvent = None,
-              eventOngoing = false,
+              eventOngoing = Some(false),
               startDateOfEvent = Some("2021-04-23T00:00:00"),
               statement = None,
               lateAppeal = true,
@@ -1938,7 +1938,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           val model = HealthAppealInformation(
             startDateOfEvent = Some("2020-01-01T00:00:00"),
             endDateOfEvent = Some("2020-01-01T00:00:01"),
-            eventOngoing = false,
+            eventOngoing = Some(false),
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
@@ -1966,7 +1966,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           val model = HealthAppealInformation(
             startDateOfEvent = Some("2021-04-23T00:00:00"),
             endDateOfEvent = None,
-            eventOngoing = true,
+            eventOngoing = Some(true),
             statement = None,
             lateAppeal = true,
             lateAppealReason = Some("Reason"),
@@ -1993,7 +1993,7 @@ class AppealSubmissionSpec extends AnyWordSpec with Matchers {
           "write the appeal model to JSON" in {
           val model = HealthAppealInformation(
             endDateOfEvent = None,
-            eventOngoing = false,
+            eventOngoing = Some(false),
             startDateOfEvent = Some("2021-04-23T00:00:00"),
             statement = None,
             lateAppeal = true,

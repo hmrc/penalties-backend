@@ -130,7 +130,7 @@ object TechnicalIssuesAppealInformation {
 case class HealthAppealInformation(
                                     startDateOfEvent: Option[String],
                                     endDateOfEvent: Option[String],
-                                    eventOngoing: Boolean,
+                                    eventOngoing: Option[Boolean],
                                     statement: Option[String],
                                     lateAppeal: Boolean,
                                     hospitalStayInvolved: Boolean,
@@ -144,68 +144,14 @@ case class HealthAppealInformation(
 object HealthAppealInformation {
   implicit val healthAppealInformationFormatter: OFormat[HealthAppealInformation] = Json.format[HealthAppealInformation]
 
-//  val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformationFormatter.transform{jso: JsObject =>
-//    jso.-("hospitalStayInvolved")
-//  }.contramap(x => x.copy(
-//    reasonableExcuse = if (x.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth",
-//    startDateOfEvent = x.startDateOfEvent.map(addUtcTimeZone),
-//    endDateOfEvent = x.endDateOfEvent.map(addUtcTimeZone),
-//  )))
-
-  val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformation: HealthAppealInformation) => {
-    val healthReason = if (healthAppealInformation.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth"
-
-    val baseHealthInfoJson = Json.obj(
-      "lateAppeal" -> healthAppealInformation.lateAppeal,
-      "reasonableExcuse" -> healthReason,
-      "honestyDeclaration" -> healthAppealInformation.honestyDeclaration
-    ).deepMerge(
-      healthAppealInformation.statement.fold(
-        Json.obj()
-      )(
-        statement => Json.obj("statement" -> statement)
-      )
-    ).deepMerge(
-      healthAppealInformation.lateAppealReason.fold(
-        Json.obj()
-      )(
-        lateAppealReason => Json.obj("lateAppealReason" -> lateAppealReason)
-      )
-    ).deepMerge(
-      healthAppealInformation.isClientResponsibleForSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForSubmission => Json.obj("isClientResponsibleForSubmission" -> isClientResponsibleForSubmission)
-      )
-    ).deepMerge(
-      healthAppealInformation.isClientResponsibleForLateSubmission.fold(
-        Json.obj()
-      )(
-        isClientResponsibleForLateSubmission => Json.obj("isClientResponsibleForLateSubmission" -> isClientResponsibleForLateSubmission)
-      )
-    )
-    val startDateOfEventZoned: String = LocalDateTime.parse(healthAppealInformation.startDateOfEvent.get).toInstant(ZoneOffset.UTC).toString
-    val additionalHealthInfo = (healthAppealInformation.hospitalStayInvolved, healthAppealInformation.eventOngoing) match {
-      case (true, true) =>
-        Json.obj(
-          "startDateOfEvent" -> startDateOfEventZoned,
-          "eventOngoing" -> healthAppealInformation.eventOngoing
-        )
-      case (true, false) =>
-        val endDateOfEventZoned: String = LocalDateTime.parse(healthAppealInformation.endDateOfEvent.get).toInstant(ZoneOffset.UTC).toString
-        Json.obj(
-          "startDateOfEvent" -> startDateOfEventZoned,
-          "eventOngoing" -> healthAppealInformation.eventOngoing,
-          "endDateOfEvent" -> endDateOfEventZoned
-        )
-      case _ =>
-        Json.obj(
-          "startDateOfEvent" -> startDateOfEventZoned
-        )
-    }
-
-    baseHealthInfoJson deepMerge additionalHealthInfo
-  }
+  val healthAppealWrites: Writes[HealthAppealInformation] = (healthAppealInformationFormatter.transform{jso: JsObject =>
+    jso.-("hospitalStayInvolved")
+  }.contramap(x => x.copy(
+    reasonableExcuse = if (x.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth",
+    startDateOfEvent = x.startDateOfEvent.map(addUtcTimeZone),
+    endDateOfEvent = x.endDateOfEvent.map(addUtcTimeZone),
+    eventOngoing = if (x.hospitalStayInvolved) x.eventOngoing else None,
+  )))
 }
 
 case class OtherAppealInformation(
