@@ -70,4 +70,11 @@ class DateHelperSpec extends SpecBase {
     }
   }
 
+  "addUtcTimeZone" should {
+    "add a Z" when {
+      "no Z is present" in {
+        DateHelper.addUtcTimeZone("2020-01-01T00:00:00") shouldBe "2020-01-01T00:00:00Z"
+      }
+    }
+  }
 }
