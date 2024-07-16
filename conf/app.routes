@@ -20,4 +20,3 @@ GET        /:regime/penalties/summary/:id               controllers.APIControlle
 GET        /penalty/financial-data/:idType/:id/:regime  controllers.APIController.getFinancialDetails(regime: String, idType: String, id: String, searchType: Option[String], searchItem: Option[String], dateType: Option[String], dateFrom: Option[String], dateTo: Option[String], includeClearedItems: Option[Boolean], includeStatisticalItems: Option[Boolean], includePaymentOnAccount: Option[Boolean], addRegimeTotalisation: Option[Boolean], addLockInformation: Option[Boolean], addPenaltyDetails: Option[Boolean], addPostedInterestDetails: Option[Boolean], addAccruingInterestDetails: Option[Boolean])
 
 GET        /penalty-details/:regime/:idType/:id          controllers.APIController.getPenaltyDetails(regime: String, idType: String, id: String, dateLimit: Option[String])
-
