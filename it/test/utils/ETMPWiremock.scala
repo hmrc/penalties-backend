@@ -44,6 +44,7 @@ trait ETMPWiremock {
       |       "penaltyOrder": "01",
       |       "penaltyCategory": "P",
       |       "penaltyStatus": "ACTIVE",
+      |       "incomeSourceName": "anIncomeSource",
       |       "penaltyCreationDate": "2022-10-30",
       |       "penaltyExpiryDate": "2022-10-30",
       |       "communicationsDate": "2022-10-30",
