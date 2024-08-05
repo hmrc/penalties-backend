@@ -74,6 +74,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
             |          "penaltyCreationDate": "2021-04-23",
             |          "penaltyExpiryDate": "2021-04-23",
             |          "penaltyStatus": "INACTIVE",
+            |          "incomeSourceName": "anIncomeSource",
             |          "appealInformation": [
             |            {
             |              "appealStatus": "99"
@@ -116,6 +117,7 @@ class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETM
                 penaltyOrder = Some("1"),
                 penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                 penaltyStatus = LSPPenaltyStatusEnum.Inactive,
+                incomeSourceName = Some("anIncomeSource"),
                 penaltyCreationDate = LocalDate.of(2021, 4, 23),
                 penaltyExpiryDate = LocalDate.of(2021, 4, 23),
                 communicationsDate = Some(LocalDate.of(2021, 4, 23)),

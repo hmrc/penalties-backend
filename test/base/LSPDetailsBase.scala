@@ -27,6 +27,7 @@ trait LSPDetailsBase {
     penaltyOrder = Some("01"),
     penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
     penaltyStatus = LSPPenaltyStatusEnum.Active,
+    incomeSourceName = Some("anIncomeSource"),
     penaltyCreationDate = LocalDate.now(),
     penaltyExpiryDate = LocalDate.now().plusYears(2),
     communicationsDate = Some(LocalDate.now()),

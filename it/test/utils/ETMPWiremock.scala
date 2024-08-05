@@ -329,7 +329,7 @@ trait ETMPWiremock {
   )
 
   def mockStubResponseForGetPenaltyDetails(status: Int, apiRegime: String, idType: String, id: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/$apiRegime/$idType/$id"))
+    stubFor(get(urlEqualTo(s"/income-tax-penalties-stubs/penalty/details/$apiRegime/$idType/$id"))
     .willReturn(
       aResponse()
         .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))

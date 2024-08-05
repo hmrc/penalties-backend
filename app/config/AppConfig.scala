@@ -80,7 +80,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   lazy val SDESNotificationFileRecipient: String = config.get[String]("SDESNotification.file.recipient")
 
   private def getPenaltyDetailsUrl: String = {
-    if (!isEnabled(CallAPI1812ETMP)) stubBase + "/income-tax-penalties-stubs/penalty/details/"
+    if (!isEnabled(CallAPI1812ETMP)) s"$stubBase/penalty/details/"
     else etmpBase + "/penalty/details/"
   }
 
@@ -89,7 +89,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   //def getCtPenaltyDetailsUrl: String = getPenaltyDetailsUrl + "CT/UTR/"
 
   private def getFinancialDetailsUrl: String = {
-    if (!isEnabled(CallAPI1811ETMP)) stubBase + s"/income-tax-penalties-stubs/penalty/financial-data/"
+    if (!isEnabled(CallAPI1811ETMP)) s"$stubBase/penalty/financial-data/"
     else etmpBase + s"/penalty/financial-data/"
   }
 
@@ -100,7 +100,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   //def getCtFinancialDetailsUrl(utr: String): String = getFinancialDetailsUrl + s"UTR/$utr/CT"
 
   def getAppealSubmissionURL(enrolmentKey: String, isLPP: Boolean, penaltyNumber: String): String = {
-    if (!isEnabled(CallPEGA)) stubBase + s"/income-tax-penalties-stubs/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
+    if (!isEnabled(CallPEGA)) s"$stubBase/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"
     else pegaBase + s"/penalty/first-stage-appeal/$penaltyNumber"
   }
 
@@ -112,7 +112,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
     if (isEnabled(CallDES)) {
       desBase + s"/enterprise/obligation-data/"
     } else {
-      stubBase + s"/penalties-stub/enterprise/obligation-data/"
+      s"$stubBase/enterprise/obligation-data/"
     }
   }
 

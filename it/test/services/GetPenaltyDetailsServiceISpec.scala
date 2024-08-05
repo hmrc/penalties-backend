@@ -28,7 +28,7 @@ import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
-import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
+import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
@@ -72,6 +72,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                 penaltyOrder = Some("01"),
                 penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
+                incomeSourceName = Some("anIncomeSource"),
                 penaltyCreationDate = LocalDate.of(2022, 10, 30),
                 penaltyExpiryDate = LocalDate.of(2022, 10, 30),
                 communicationsDate = Some(LocalDate.of(2022, 10, 30)),
@@ -187,7 +188,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
         mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(noDataFoundBody))
         val result = await(service.getDataFromPenaltyService(enrolmentKey))
         result.isLeft shouldBe true
-        result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
+        result.left.getOrElse(GetPenaltyDetailsFailureResponse(NOT_FOUND)) shouldBe GetPenaltyDetailsNoContent
       }
 
       s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
