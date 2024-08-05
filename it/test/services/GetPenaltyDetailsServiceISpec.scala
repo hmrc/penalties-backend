@@ -188,7 +188,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
         mockStubResponseForGetPenaltyDetails(Status.NOT_FOUND, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, body = Some(noDataFoundBody))
         val result = await(service.getDataFromPenaltyService(enrolmentKey))
         result.isLeft shouldBe true
-        result.left.getOrElse(GetPenaltyDetailsFailureResponse(NOT_FOUND)) shouldBe GetPenaltyDetailsNoContent
+        result.left.getOrElse(GetPenaltyDetailsFailureResponse(IM_A_TEAPOT)) shouldBe GetPenaltyDetailsNoContent
       }
 
       s"an unknown response is returned from the connector - $GetPenaltyDetailsFailureResponse" in {
