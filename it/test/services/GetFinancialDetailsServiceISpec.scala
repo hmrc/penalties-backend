@@ -63,7 +63,6 @@ class GetFinancialDetailsServiceISpec extends IntegrationSpecCommonBase with ETM
       "call the connector and return a successful result" in {
         mockStubResponseForGetFinancialDetails(Status.OK, s"${enrolmentKey.keyType.name}/${enrolmentKey.key}/$apiRegime?$financialDataQueryParam", Some(getFinancialDetailsAsJson.toString()))
         val result = await(service.getFinancialDetails(enrolmentKey, None))
-        println("AAAAAA" + result)
         result.isRight shouldBe true
         result.toOption.get shouldBe GetFinancialDetailsSuccessResponse(getFinancialDetailsModel)
       }
