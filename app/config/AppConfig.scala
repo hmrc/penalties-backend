@@ -61,7 +61,8 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   lazy val desBearerToken: String = config.get[String]("des.outboundBearerToken")
 
   lazy val stubBase: String = {
-    val path = config.getOptional[String]("microservice.services.income-tax-penalties-stubs.path").getOrElse("/income-tax-penalties-stubs")
+    val pathCfg = config.getOptional[String]("microservice.services.income-tax-penalties-stubs.path").getOrElse("income-tax-penalties-stubs")
+    val path = if (pathCfg.isBlank) "" else s"/$pathCfg"
     servicesConfig.baseUrl("income-tax-penalties-stubs") + path
   }
 
