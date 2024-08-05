@@ -65,8 +65,8 @@ trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneS
   val configForApp: Map[String, Any] = Map(
     "auditing.enabled" -> true,
     "auditing.traceRequests" -> false,
-    "microservice.services.penalties-stub.host" -> stubHost,
-    "microservice.services.penalties-stub.port" -> stubPort,
+    "microservice.services.income-tax-penalties-stubs.host" -> stubHost,
+    "microservice.services.income-tax-penalties-stubs.port" -> stubPort,
     "microservice.services.etmp.host" -> stubHost,
     "microservice.services.etmp.port" -> stubPort,
     "microservice.services.pega.host" -> stubHost,
