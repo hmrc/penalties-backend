@@ -49,7 +49,7 @@ trait AppealWiremock {
   }
 
   def mockResponseForAppealSubmissionStub(status: Int, enrolmentKey: String, penaltyNumber: String, isLPP: Boolean = false): StubMapping = {
-    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
+    stubFor(post(urlEqualTo(s"/income-tax-penalties-stubs/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
       .willReturn(
         aResponse()
           .withBody(if(status == 200) appealResponseModel.toString() else errorResponse.toString())
@@ -58,7 +58,7 @@ trait AppealWiremock {
   }
 
   def mockResponseForAppealSubmissionStubFault(enrolmentKey: String, penaltyNumber: String, isLPP: Boolean = false): StubMapping = {
-    stubFor(post(urlEqualTo(s"/penalties-stub/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
+    stubFor(post(urlEqualTo(s"/income-tax-penalties-stubs/appeals/submit?enrolmentKey=$enrolmentKey&isLPP=$isLPP&penaltyNumber=$penaltyNumber"))
       .willReturn(
         aResponse()
           .withFault(Fault.CONNECTION_RESET_BY_PEER)

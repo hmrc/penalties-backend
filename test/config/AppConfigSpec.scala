@@ -62,10 +62,11 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
     "call API1812 stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallAPI1812ETMP)
+      when(mockConfiguration.getOptional[String](Matchers.any())(any())).thenReturn(Some("foo"))
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = this.config.getVatPenaltyDetailsUrl
-      result shouldBe "localhost:0000/penalties-stub/penalty/details/VATC/VRN/"
+      result shouldBe "localhost:0000/foo/penalty/details/VATC/VRN/"
     }
   }
 
@@ -80,10 +81,11 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
     "call API1811 stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallAPI1811ETMP)
+      when(mockConfiguration.getOptional[String](Matchers.any())(any())).thenReturn(None)
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = this.config.getVatFinancialDetailsUrl("123456789")
-      result shouldBe "localhost:0000/penalties-stub/penalty/financial-data/VRN/123456789/VATC"
+      result shouldBe "localhost:0000/income-tax-penalties-stubs/penalty/financial-data/VRN/123456789/VATC"
     }
   }
 
@@ -98,28 +100,31 @@ class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitchin
 
     "call the stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallPEGA)
+      when(mockConfiguration.getOptional[String](Matchers.any())(any())).thenReturn(Some(""))
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = this.config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = false, penaltyNumber = "0000001")
-      result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=0000001"
+      result shouldBe "localhost:0000/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=false&penaltyNumber=0000001"
     }
 
     "call the stub when the feature switch is disabled - for LPP" in new Setup {
       disableFeatureSwitch(CallPEGA)
+      when(mockConfiguration.getOptional[String](Matchers.any())(any())).thenReturn(Some(""))
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = this.config.getAppealSubmissionURL("HMRC-MTD-VAT~VRN~123456789", isLPP = true, penaltyNumber = "0000001")
-      result shouldBe "localhost:0000/penalties-stub/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=0000001"
+      result shouldBe "localhost:0000/appeals/submit?enrolmentKey=HMRC-MTD-VAT~VRN~123456789&isLPP=true&penaltyNumber=0000001"
     }
   }
 
   "getComplianceData" should {
     "call the stub when the feature switch is disabled" in new Setup {
       disableFeatureSwitch(CallDES)
+      when(mockConfiguration.getOptional[String](Matchers.any())(any())).thenReturn(Some(""))
       when(mockServicesConfig.baseUrl(Matchers.any()))
         .thenReturn("localhost:0000")
       val result: String = this.config.getVatComplianceDataUrl("123456789", "2020-01-01", "2020-12-31")
-      result shouldBe "localhost:0000/penalties-stub/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
+      result shouldBe "localhost:0000/enterprise/obligation-data/vrn/123456789/VATC?from=2020-01-01&to=2020-12-31"
     }
 
     "call the stub when the feature switch is enabled" in new Setup {

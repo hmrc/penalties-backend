@@ -44,6 +44,7 @@ trait ETMPWiremock {
       |       "penaltyOrder": "01",
       |       "penaltyCategory": "P",
       |       "penaltyStatus": "ACTIVE",
+      |       "incomeSourceName": "anIncomeSource",
       |       "penaltyCreationDate": "2022-10-30",
       |       "penaltyExpiryDate": "2022-10-30",
       |       "communicationsDate": "2022-10-30",
@@ -329,7 +330,7 @@ trait ETMPWiremock {
   )
 
   def mockStubResponseForGetPenaltyDetails(status: Int, apiRegime: String, idType: String, id: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/details/$apiRegime/$idType/$id"))
+    stubFor(get(urlEqualTo(s"/income-tax-penalties-stubs/penalty/details/$apiRegime/$idType/$id"))
     .willReturn(
       aResponse()
         .withBody(body.fold(getPenaltyDetailsWithLSPAndLPPAsJson.toString())(identity))
@@ -347,7 +348,7 @@ trait ETMPWiremock {
   }
 
   def mockStubResponseForGetFinancialDetails(status: Int, vatcUrl: String, body: Option[String] = None): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/penalty/financial-data/$vatcUrl"))
+    stubFor(get(urlEqualTo(s"/income-tax-penalties-stubs/penalty/financial-data/$vatcUrl"))
       .willReturn(
         aResponse()
           .withBody(body.fold(getFinancialDetailsWithoutTotalisationsAsJson.toString())(identity))

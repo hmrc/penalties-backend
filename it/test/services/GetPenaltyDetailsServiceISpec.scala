@@ -28,7 +28,7 @@ import models.getPenaltyDetails.lateSubmission._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
-import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}
+import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
@@ -72,6 +72,7 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                 penaltyOrder = Some("01"),
                 penaltyCategory = Some(LSPPenaltyCategoryEnum.Point),
                 penaltyStatus = LSPPenaltyStatusEnum.Active,
+                incomeSourceName = Some("anIncomeSource"),
                 penaltyCreationDate = LocalDate.of(2022, 10, 30),
                 penaltyExpiryDate = LocalDate.of(2022, 10, 30),
                 communicationsDate = Some(LocalDate.of(2022, 10, 30)),

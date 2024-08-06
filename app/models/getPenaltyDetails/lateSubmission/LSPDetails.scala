@@ -26,6 +26,7 @@ case class LSPDetails(
                        penaltyOrder: Option[String],
                        penaltyCategory: Option[LSPPenaltyCategoryEnum.Value],
                        penaltyStatus: LSPPenaltyStatusEnum.Value,
+                       incomeSourceName: Option[String],
                        penaltyCreationDate: LocalDate,
                        penaltyExpiryDate: LocalDate,
                        communicationsDate: Option[LocalDate],

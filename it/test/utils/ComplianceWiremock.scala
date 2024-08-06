@@ -91,7 +91,7 @@ trait ComplianceWiremock {
   }
 
   def mockResponseForComplianceDataFromStub(status: Int, apiRegime: String, idType: String, id: String, fromDate: String, toDate: String): StubMapping = {
-    stubFor(get(urlEqualTo(s"/penalties-stub/enterprise/obligation-data/$idType/$id/$apiRegime?from=$fromDate&to=$toDate"))
+    stubFor(get(urlEqualTo(s"/income-tax-penalties-stubs/enterprise/obligation-data/$idType/$id/$apiRegime?from=$fromDate&to=$toDate"))
       .willReturn(
         aResponse()
           .withStatus(status)
