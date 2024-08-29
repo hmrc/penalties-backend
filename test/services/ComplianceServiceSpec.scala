@@ -22,7 +22,7 @@ import connectors.parsers.ComplianceParser._
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.compliance.CompliancePayload
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers as Matchers
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier

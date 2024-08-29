@@ -18,7 +18,7 @@ package utils
 
 import base.SpecBase
 import config.AppConfig
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers as Matchers
 import org.mockito.Mockito.{mock, when}
 
 class FileHelperSpec extends SpecBase {

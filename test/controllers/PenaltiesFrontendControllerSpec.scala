@@ -23,7 +23,7 @@ import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers as Matchers
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json

@@ -29,8 +29,8 @@ import play.api.libs.ws.{WSClient, WSRequest}
 import play.api.{Application, Configuration}
 import uk.gov.hmrc.http.HeaderCarrier
 
-trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneServerPerSuite with
-  BeforeAndAfterAll with BeforeAndAfterEach with TestSuite with WiremockHelper with DatastreamWiremock {
+trait IntegrationSpecCommonBase extends AnyWordSpec with Matchers with GuiceOneServerPerSuite with BeforeAndAfterAll
+  with BeforeAndAfterEach with TestSuite with WiremockHelper with DatastreamWiremock {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 

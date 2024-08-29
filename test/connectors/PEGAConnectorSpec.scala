@@ -21,44 +21,49 @@ import config.featureSwitches.{CallPEGA, FeatureSwitching}
 import connectors.parsers.AppealsParser.{AppealSubmissionResponse, UnexpectedFailure}
 import models.EnrolmentKey
 import models.appeals.{AgentDetails, AppealSubmission, CrimeAppealInformation}
-import org.mockito.Mockito._
-import org.mockito.{ArgumentCaptor, Matchers}
+import org.mockito.ArgumentMatchers as Matchers
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.*
 import play.api.Configuration
-import play.api.test.Helpers._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
+import play.api.test.Helpers.*
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
+import utils.VarargCaptor
 
 import java.time.LocalDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing {
-  val mockHttpClient: HttpClient = mock(classOf[HttpClient])
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq("CorrelationId" -> "id"))
   implicit val config: Configuration = appConfig.config
 
   class Setup {
+    val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2], RETURNS_DEEP_STUBS)
+
     val connector = new PEGAConnector(
       mockHttpClient,
       appConfig
     )(ExecutionContext.Implicits.global)
 
-    reset(mockHttpClient)
+    val argumentCaptorOtherHeaders = new VarargCaptor[(String, String)]
+
+    def mockPost[T](response: Future[T]): Unit = {
+      when(mockHttpClient.post(
+          Matchers.any()
+        )(Matchers.any())
+        .setHeader(argumentCaptorOtherHeaders.capture)
+        .withBody(Matchers.any())(Matchers.any(), any(), Matchers.any())
+        .execute(Matchers.any(), Matchers.any())
+      ).thenReturn(response)
+    }
   }
 
   "submitAppeal with headers" should {
     "return the response of the call - including extra headers" in new Setup {
       enableFeatureSwitch(CallPEGA)
-      val argumentCaptorOtherHeaders: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        Matchers.any(),
-        Matchers.any(),
-        argumentCaptorOtherHeaders.capture()
-      )(Matchers.any(),
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()))
-        .thenReturn(Future.successful(Right(appealResponseModel)))
+      mockPost(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -88,15 +93,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
     }
 
     "return the response of the call for LPP" in new Setup {
-      when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()
-      )(Matchers.any(),
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()))
-        .thenReturn(Future.successful(Right(appealResponseModel)))
+      mockPost(Future.successful(Right(appealResponseModel)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -122,15 +119,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
     }
 
     "returns a 4xx response for a UpstreamErrorResponse(4xx) exception" in new Setup {
-      when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()
-      )(Matchers.any(),
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("", BAD_REQUEST)))
+      mockPost(Future.failed(UpstreamErrorResponse.apply("", BAD_REQUEST)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -161,15 +150,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
     }
 
     "returns a 5xx response for a UpstreamErrorResponse(5xx) exception" in new Setup {
-      when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()
-      )(Matchers.any(),
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("", INTERNAL_SERVER_ERROR)))
+      mockPost(Future.failed(UpstreamErrorResponse.apply("", INTERNAL_SERVER_ERROR)))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -200,15 +181,7 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
     }
 
     "returns a 500 response for an unknown exception" in new Setup {
-      when(mockHttpClient.POST[AppealSubmission, AppealSubmissionResponse](
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()
-      )(Matchers.any(),
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()))
-        .thenReturn(Future.failed(new Exception("failed")))
+      mockPost(Future.failed(new Exception("failed")))
       val modelToSend: AppealSubmission = AppealSubmission(
         taxRegime = "VAT",
         customerReferenceNo = "123456789",
@@ -242,9 +215,9 @@ class PEGAConnectorSpec extends SpecBase with FeatureSwitching with LogCapturing
   "headerForEIS" should {
     "return a HeaderCarrier with the correct headers" in new Setup {
       val result: HeaderCarrier = connector.headersForEIS("id", "token", "env")
-      result.otherHeaders.toMap.get("Environment").get shouldBe "env"
-      result.otherHeaders.toMap.get("CorrelationId").get shouldBe "id"
-      result.otherHeaders.toMap.get(AUTHORIZATION).get shouldBe "Bearer token"
+      result.otherHeaders.contains("Environment","env") shouldBe true
+      result.otherHeaders.contains("CorrelationId", "id") shouldBe true
+      result.otherHeaders.contains(AUTHORIZATION, "Bearer token") shouldBe true
     }
   }
 }

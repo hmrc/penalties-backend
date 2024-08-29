@@ -45,4 +45,6 @@ object TestUtils {
       }
     }
   }
+
+  given Conversion[String, java.net.URL] = new java.net.URL(_)
 }

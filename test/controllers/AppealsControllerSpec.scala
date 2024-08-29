@@ -32,9 +32,10 @@ import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.lateSubmission._
 import models.notification._
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers as Matchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.mockito.{ArgumentCaptor, Matchers}
+import org.mockito.ArgumentCaptor
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.Configuration
 import play.api.http.Status

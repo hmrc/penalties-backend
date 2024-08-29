@@ -17,20 +17,24 @@
 package connectors
 
 import config.AppConfig
-import connectors.parsers.ComplianceParser.{CompliancePayloadFailureResponse, CompliancePayloadResponse}
+import connectors.parsers.ComplianceParser.{CompliancePayloadFailureResponse, CompliancePayloadResponse, CompliancePayloadSuccessResponse}
 import models.EnrolmentKey
-import models.EnrolmentKey._
+import models.EnrolmentKey.*
 import models.TaxRegime.{ITSA, VAT}
+import models.compliance.CompliancePayload
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
-import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.PagerDutyHelper.PagerDutyKeys.*
+import uk.gov.hmrc.http.HttpReads.Implicits.given
 
+import java.net.URL
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ComplianceConnector @Inject()(httpClient: HttpClient,
+class ComplianceConnector @Inject()(httpClient: HttpClientV2,
                                    appConfig: AppConfig)
                                    (implicit ec: ExecutionContext){
   def getComplianceData(enrolmentKey: EnrolmentKey, fromDate: String, toDate: String)(implicit hc: HeaderCarrier): Future[CompliancePayloadResponse] = {
@@ -46,19 +50,17 @@ class ComplianceConnector @Inject()(httpClient: HttpClient,
       case _ => throw new Exception(s"No getComplianceData URL available for $enrolmentKey")
     }
     logger.debug(s"[ComplianceConnector][getComplianceData] - Calling GET $url with headers: $desHeaders")
-    httpClient.GET[CompliancePayloadResponse](url, headers = desHeaders).recover {
-      case e: UpstreamErrorResponse => {
+    httpClient.get(new URL(url)).setHeader(desHeaders *).execute[CompliancePayloadResponse].recover {
+      case e: UpstreamErrorResponse =>
         PagerDutyHelper.logStatusCode("getComplianceData", e.statusCode)(RECEIVED_4XX_FROM_1330_API, RECEIVED_5XX_FROM_1330_API)
         logger.error(s"[ComplianceConnector][] -" +
           s" Received ${e.statusCode} status from API 1330 call - returning status to caller")
         Left(CompliancePayloadFailureResponse(e.statusCode))
-      }
-      case e: Exception => {
+      case e: Exception =>
         PagerDutyHelper.log("getComplianceData", UNKNOWN_EXCEPTION_CALLING_1330_API)
         logger.error(s"[ComplianceConnector][getComplianceData] -" +
           s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
         Left(CompliancePayloadFailureResponse(INTERNAL_SERVER_ERROR))
-      }
     }
   }
 }

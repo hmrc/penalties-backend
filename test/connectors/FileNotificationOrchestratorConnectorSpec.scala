@@ -18,24 +18,27 @@ package connectors
 
 import base.SpecBase
 import config.AppConfig
-import models.notification._
-import org.mockito.Matchers
-import org.mockito.Mockito._
+import models.notification.*
+import org.mockito.ArgumentMatchers as Matchers
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.*
 import play.api.http.Status.OK
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class FileNotificationOrchestratorConnectorSpec extends SpecBase {
-   val mockHttpClient: HttpClient = mock(classOf[HttpClient])
-   val mockAppConfig: AppConfig = mock(classOf[AppConfig])
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   class Setup {
-    reset(mockHttpClient)
-    val connector = new FileNotificationOrchestratorConnector(mockHttpClient, mockAppConfig)
+    val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2], RETURNS_DEEP_STUBS)
+    val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+
+    when(mockAppConfig.postFileNotificationUrl).thenReturn("http://foo")
+
+    val connector = new FileNotificationOrchestratorConnector(mockHttpClient, mockAppConfig)(ExecutionContext.global)
   }
 
   "postFileNotifications" should {
@@ -54,15 +57,10 @@ class FileNotificationOrchestratorConnectorSpec extends SpecBase {
           correlationID = "corr12345"
         )
       )
-      when(mockHttpClient.POST[Seq[SDESNotification], HttpResponse](
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()
-      )(Matchers.any(),
-        Matchers.any(),
-        Matchers.any(),
-        Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(mockHttpClient.post(Matchers.any())(Matchers.any())
+        .withBody(Matchers.any())(Matchers.any(), any(), Matchers.any())
+        .execute(Matchers.any(),Matchers.any())
+      ).thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val result: HttpResponse = await(connector.postFileNotifications(Seq(model))(HeaderCarrier()))
       result.status shouldBe OK
