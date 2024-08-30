@@ -20,22 +20,24 @@ import config.AppConfig
 import config.featureSwitches.FeatureSwitching
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsResponse}
 import models.EnrolmentKey
-import models.EnrolmentKey._
+import models.EnrolmentKey.*
 import models.TaxRegime.{ITSA, VAT}
 import play.api.Configuration
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
-import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.PagerDutyHelper.PagerDutyKeys.*
 import utils.{DateHelper, PagerDutyHelper}
 
+import java.net.URL
 import java.time.LocalDateTime
 import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
+class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClientV2,
                                            appConfig: AppConfig)
                                           (implicit ec: ExecutionContext, val config: Configuration) extends FeatureSwitching {
 
@@ -52,19 +54,17 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
   def getPenaltyDetails(enrolmentKey: EnrolmentKey)(implicit hc: HeaderCarrier): Future[GetPenaltyDetailsResponse] = {
     val url: String = getPenaltyDetailsUrl(enrolmentKey)
     logger.debug(s"[GetPenaltyDetailsConnector][getPenaltyDetails] - Calling GET $url \nHeaders: $headers")
-    httpClient.GET[GetPenaltyDetailsResponse](url, Seq.empty[(String, String)], headers).recover {
-      case e: UpstreamErrorResponse => {
+    httpClient.get(new URL(url)).setHeader(headers *).execute[GetPenaltyDetailsResponse].recover {
+      case e: UpstreamErrorResponse =>
         PagerDutyHelper.logStatusCode("getPenaltyDetails", e.statusCode)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetails] -" +
           s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
         Left(GetPenaltyDetailsFailureResponse(e.statusCode))
-      }
-      case e: Exception => {
+      case e: Exception =>
         PagerDutyHelper.log("getPenaltyDetails", UNKNOWN_EXCEPTION_CALLING_1812_API)
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetails] -" +
           s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
         Left(GetPenaltyDetailsFailureResponse(INTERNAL_SERVER_ERROR))
-      }
     }
   }
 
@@ -77,18 +77,16 @@ class GetPenaltyDetailsConnector @Inject()(httpClient: HttpClient,
 
   def getPenaltyDetailsForAPI(enrolmentKey: EnrolmentKey, dateLimit: Option[String])(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val queryParam: String = s"${dateLimit.fold("")(dateLimit => s"?dateLimit=$dateLimit")}"
-    httpClient.GET[HttpResponse](getPenaltyDetailsUrl(enrolmentKey) + queryParam, headers = headers).recover {
-      case e: UpstreamErrorResponse => {
+    httpClient.get(new URL(getPenaltyDetailsUrl(enrolmentKey) + queryParam)).setHeader(headers *).execute.recover {
+      case e: UpstreamErrorResponse =>
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" Received ${e.statusCode} status from API 1812 call - returning status to caller")
         HttpResponse(e.statusCode, e.message)
-      }
-      case e: Exception => {
+      case e: Exception =>
         PagerDutyHelper.log("getPenaltyDetailsForAPI", UNKNOWN_EXCEPTION_CALLING_1812_API)
         logger.error(s"[GetPenaltyDetailsConnector][getPenaltyDetailsForAPI] -" +
           s" An unknown exception occurred - returning 500 back to caller - message: ${e.getMessage}")
         HttpResponse(INTERNAL_SERVER_ERROR, "An unknown exception occurred. Contact the Penalties team for more information.")
-      }
     }
   }
 }

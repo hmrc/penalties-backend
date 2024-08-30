@@ -144,7 +144,7 @@ case class HealthAppealInformation(
 object HealthAppealInformation {
   implicit val healthAppealInformationFormatter: OFormat[HealthAppealInformation] = Json.format[HealthAppealInformation]
 
-  val healthAppealWrites: Writes[HealthAppealInformation] = healthAppealInformationFormatter.transform{jso: JsObject =>
+  val healthAppealWrites: Writes[HealthAppealInformation] = healthAppealInformationFormatter.transform{(jso: JsObject) =>
     jso.-("hospitalStayInvolved")
   }.contramap(orig => orig.copy(
     reasonableExcuse = if (orig.hospitalStayInvolved) "unexpectedHospitalStay" else "seriousOrLifeThreateningIllHealth",

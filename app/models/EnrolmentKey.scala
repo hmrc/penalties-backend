@@ -16,10 +16,9 @@
 
 package models
 
-import models.EnrolmentKey.KeyType
-import models.TaxRegime._
-import play.api.mvc.PathBindable.{Parsing => PathParsing}
-import play.api.mvc.QueryStringBindable.{Parsing => QueryStringParsing}
+import models.TaxRegime.*
+import play.api.mvc.PathBindable.Parsing as PathParsing
+import play.api.mvc.QueryStringBindable.Parsing as QueryStringParsing
 
 import scala.util.matching.Regex
 
@@ -62,14 +61,14 @@ object EnrolmentKey {
 
   /** Supports using Enrolment Keys in query string parameters */
   implicit def queryStringBinder: QueryStringParsing[EnrolmentKey] =
-    new QueryStringParsing({ str => EnrolmentKey(str) }, { ek: EnrolmentKey => ek.toString }, { case (msg, _) => msg })
+    new QueryStringParsing({ str => EnrolmentKey(str) }, { (ek: EnrolmentKey) => ek.toString }, { case (msg, _) => msg })
 
   /** Supports using Enrolment Keys in route paths */
   implicit def pathBinder: PathParsing[EnrolmentKey] =
-    new PathParsing({ str => EnrolmentKey(str) }, { ek: EnrolmentKey => ek.toString }, { case (msg, _) => msg })
+    new PathParsing({ str => EnrolmentKey(str) }, { (ek: EnrolmentKey) => ek.toString }, { case (msg, _) => msg })
 }
 
-case class EnrolmentKey(regime: TaxRegime, keyType: KeyType, key: String) {
+case class EnrolmentKey(regime: TaxRegime, keyType: EnrolmentKey.KeyType, key: String) {
   import EnrolmentKey._
 
   // validate on construction

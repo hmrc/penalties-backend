@@ -17,8 +17,8 @@
 package config
 
 import config.featureSwitches._
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.{ArgumentMatchers => Matchers}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.{Matchers => ShouldMatchers}
 import org.scalatest.wordspec.AnyWordSpec

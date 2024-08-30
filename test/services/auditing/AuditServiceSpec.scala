@@ -19,7 +19,7 @@ package services.auditing
 import base.SpecBase
 import config.AppConfig
 import models.auditing.JsonAuditModel
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers as Matchers
 import org.mockito.Mockito.{mock, reset, verify, when}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId, SessionId}

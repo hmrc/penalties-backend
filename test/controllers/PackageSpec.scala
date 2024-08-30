@@ -17,7 +17,7 @@
 package controllers
 
 import models.{EnrolmentKey, TaxRegime}
-import org.mockito.Mockito.{mock, verifyZeroInteractions}
+import org.mockito.Mockito.{mock, verifyNoInteractions}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.mvc.Results.BadRequest
@@ -41,7 +41,7 @@ class PackageSpec extends AnyWordSpec with Matchers {
       val futureResult = Try(throw new Exception("doubleplusungood")).andThen ( mockBody )
       val response = result(futureResult, Inf)
       response shouldBe BadRequest("doubleplusungood")
-      verifyZeroInteractions (mockBody)
+      verifyNoInteractions (mockBody)
     }
     "return result of logic nobody normally" in {
       Try(someKey).andThen ( _ => good ) shouldBe good

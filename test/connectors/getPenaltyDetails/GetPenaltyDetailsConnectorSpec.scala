@@ -23,16 +23,18 @@ import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyD
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.getPenaltyDetails.GetPenaltyDetails
-import org.mockito.Mockito.{mock, reset, when}
-import org.mockito.{ArgumentCaptor, Matchers}
+import org.mockito.ArgumentMatchers as Matchers
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, mock, when}
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
-import utils.DateHelper
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
+import utils.TestUtils.given
+import utils.{DateHelper, VarargCaptor}
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,26 +42,33 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with FeatureSwitching {
   override implicit val config: Configuration = injector.instanceOf[Configuration]
 
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val mockHttpClient: HttpClient = mock(classOf[HttpClient])
-  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-  implicit val mockConfiguration: Configuration = mock(classOf[Configuration])
 
   val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
-    reset(mockHttpClient)
-    reset(mockAppConfig)
-    reset(mockConfiguration)
+    val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2], RETURNS_DEEP_STUBS)
+    val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+    implicit val mockConfiguration: Configuration = mock(classOf[Configuration])
 
-    val connector = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, mockConfiguration)
-    when(mockAppConfig.getVatPenaltyDetailsUrl).thenReturn("/penalty/details/VATC/VRN/")
+    val connector = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(ExecutionContext.global, mockConfiguration)
+    when(mockAppConfig.getVatPenaltyDetailsUrl).thenReturn("http://foo/penalty/details/VATC/VRN/")
     when(mockAppConfig.eisEnvironment).thenReturn("env")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("token")
     when(mockConfiguration.getOptional[String](Matchers.eq("feature.switch.time-machine-now"))(Matchers.any()))
       .thenReturn(None)
     sys.props -= TIME_MACHINE_NOW
+
+    val argumentCaptorForHeaders: VarargCaptor[(String, String)] = new VarargCaptor[(String, String)]
+
+    def mockGet[T](response: Future[T], queryParam: String = ""): Unit = {
+      when(mockHttpClient.get(
+          Matchers.eq(s"http://foo/penalty/details/VATC/VRN/123456789$queryParam")
+        )(Matchers.any())
+        .setHeader(argumentCaptorForHeaders.capture)
+        .execute(Matchers.any(), Matchers.any())
+      ).thenReturn(response)
+    }
   }
 
   val mockGetPenaltyDetailsModelAPI1812: GetPenaltyDetails = GetPenaltyDetails(
@@ -71,43 +80,25 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
 
   "getPenaltiesDetails" should {
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
+      mockGet(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
 
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isRight shouldBe true
     }
 
     "send the 'ReceiptDate' header to the value set in the feature switch" in new Setup {
-      val argumentCaptorForHeaders = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        argumentCaptorForHeaders.capture())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
+      mockGet(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
+
       setTimeMachineDate(Some(LocalDateTime.parse("2023-01-01T01:01:01Z", DateHelper.dateTimeFormatter)))
-      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
+      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(ExecutionContext.global, config)
       val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails(vrn123456789))
       result.isRight shouldBe true
       argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2 shouldBe "2023-01-01T01:01:01Z"
     }
 
     "send the 'ReceiptDate' header to the value set in the config" in new Setup {
-      val argumentCaptorForHeaders = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        argumentCaptorForHeaders.capture())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
+      mockGet(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
+
       when(mockConfiguration.getOptional[String](Matchers.eq("feature.switch.time-machine-now"))(Matchers.any()))
         .thenReturn(Some("2023-01-01T01:01:01"))
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
@@ -116,15 +107,9 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
     }
 
     "send the 'ReceiptDate' header to the system date time when feature switch not set" in new Setup {
-      val argumentCaptorForHeaders = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        argumentCaptorForHeaders.capture())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
-      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(implicitly, config)
+      mockGet(Future.successful(Right(GetPenaltyDetailsSuccessResponse(mockGetPenaltyDetailsModelAPI1812))))
+
+      val connectorForTest = new GetPenaltyDetailsConnector(mockHttpClient, mockAppConfig)(ExecutionContext.global, config)
       val result: GetPenaltyDetailsResponse = await(connectorForTest.getPenaltyDetails(vrn123456789))
       result.isRight shouldBe true
       val receiptDateValue: String = argumentCaptorForHeaders.getValue.find(_._1 == "ReceiptDate").get._2
@@ -132,91 +117,49 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
     }
 
     s"return a 404 when the call fails for Not Found" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
+      mockGet(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.NOT_FOUND))))
 
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
     s"return a 400 when the call fails for Bad Request" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.BAD_REQUEST))))
+      mockGet(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.BAD_REQUEST))))
 
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
     s"return a 409 when the call fails for Conflict" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.CONFLICT))))
+      mockGet(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.CONFLICT))))
 
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
     s"return a 422 when the call fails for Unprocessable Entity" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
+      mockGet(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
 
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
     s"return a 500 when the call fails for Internal Server Error" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
+      mockGet(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
     s"return a 503 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetPenaltyDetailsResponse](Matchers.eq("/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
+      mockGet(Future.successful(Left(GetPenaltyDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
 
       val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
       result.isLeft shouldBe true
     }
 
     "return a 500 when the call fails due to an UpstreamErrorResponse(5xx) exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("", Status.INTERNAL_SERVER_ERROR)))
+      mockGet(Future.failed(UpstreamErrorResponse.apply("", Status.INTERNAL_SERVER_ERROR)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
@@ -227,13 +170,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
     }
 
     "return a 400 when the call fails due to an UpstreamErrorResponse(4xx) exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("", Status.BAD_REQUEST)))
+      mockGet(Future.failed(UpstreamErrorResponse.apply("", Status.BAD_REQUEST)))
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789))
@@ -244,13 +181,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
     }
 
     "return a 500 when the call fails due to an unexpected exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(new Exception("Something weird happened")))
+      mockGet(Future.failed(new Exception("Something weird happened")))
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: GetPenaltyDetailsResponse = await(connector.getPenaltyDetails(vrn123456789)(HeaderCarrier()))
@@ -265,13 +196,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
     val queryParam = "?dateLimit=09"
 
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789$queryParam"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)))
+      mockGet(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)), queryParam)
 
       val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.OK
@@ -279,13 +204,7 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
     }
 
     "return a 200 when the call succeeds - with only vrn" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)))
+      mockGet(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetPenaltyDetailsModelAPI1812), headers = Map.empty)))
 
       val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = None)(HeaderCarrier()))
       result.status shouldBe Status.OK
@@ -293,39 +212,22 @@ class GetPenaltyDetailsConnectorSpec extends SpecBase with LogCapturing with Fea
     }
 
     s"return a 403 when the call fails for Not Found (for 4xx errors)" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789$queryParam"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("You shall not pass", Status.FORBIDDEN)))
+      mockGet(Future.failed(UpstreamErrorResponse.apply("You shall not pass", Status.FORBIDDEN)), queryParam)
 
       val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.FORBIDDEN
     }
 
     s"return a 500 when the call fails for Internal Server Error (for 5xx errors)" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789$queryParam"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("Oops :(", Status.INTERNAL_SERVER_ERROR)))
+      mockGet(Future.failed(UpstreamErrorResponse.apply("Oops :(", Status.INTERNAL_SERVER_ERROR)), queryParam)
 
       val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = Some("09"))(HeaderCarrier()))
       result.status shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "return a 500 when the call fails due to an unexpected exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/penalty/details/VATC/VRN/123456789$queryParam"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(new Exception("Something weird happened")))
+      mockGet(Future.failed(new Exception("Something weird happened")), queryParam)
+
       withCaptureOfLoggingFrom(logger) {
         logs => {
           val result: HttpResponse = await(connector.getPenaltyDetailsForAPI(vrn123456789, dateLimit = Some("09"))(HeaderCarrier()))

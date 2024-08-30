@@ -1,26 +1,27 @@
 import play.core.PlayVersion
-import play.sbt.PlayImport._
+import play.sbt.PlayImport.*
 import sbt.Keys.libraryDependencies
-import sbt._
+import sbt.*
 
 object AppDependencies {
 
-  private val bootstrapVersion = "8.5.0"
-  private val hmrcMongoVersion = "1.7.0"
+  private val playVersion = "play-30"
+  private val bootstrapVersion = "9.0.0"
+  private val hmrcMongoVersion = "2.1.0"
 
-  val compile = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-backend-play-30"  % bootstrapVersion,
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-play-30"         % hmrcMongoVersion,
-    "commons-io"              % "commons-io"                  % "2.14.0"
+  val compile: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc"             %% s"bootstrap-backend-$playVersion"  % bootstrapVersion,
+    "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-$playVersion"         % hmrcMongoVersion,
+    "commons-io"              %  "commons-io"                       % "2.16.1"
   )
 
-  val test = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-30"     % bootstrapVersion            % Test,
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-30"    % hmrcMongoVersion            % Test,
-    "org.mockito"             % "mockito-all"                 % "1.10.19"                   % Test
+  val test: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc"             %% s"bootstrap-test-$playVersion"     % bootstrapVersion            % Test,
+    "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-test-$playVersion"    % hmrcMongoVersion            % Test,
+    "org.mockito"             % "mockito-core"                      % "5.13.0"                    % Test
   )
 
-  val it = Seq(
-    "org.mockito"             % "mockito-all"                 % "1.10.19"                   % Test
+  val it: Seq[ModuleID] = Seq(
+    "org.mockito"             % "mockito-core"                      % "5.13.0"                    % Test
   )
 }

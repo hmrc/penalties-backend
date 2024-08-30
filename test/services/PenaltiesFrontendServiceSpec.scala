@@ -27,7 +27,7 @@ import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDe
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.latePayment._
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers as Matchers
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.http.Status
 import play.api.http.Status.INTERNAL_SERVER_ERROR

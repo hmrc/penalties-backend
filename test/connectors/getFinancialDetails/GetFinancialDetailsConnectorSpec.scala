@@ -18,40 +18,47 @@ package connectors.getFinancialDetails
 
 import base.{LogCapturing, SpecBase}
 import config.AppConfig
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.*
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails}
-import org.mockito.Matchers
-import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers as Matchers
+import org.mockito.Mockito.*
 import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.test.Helpers._
-import uk.gov.hmrc.http._
+import play.api.test.Helpers.*
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.http.client.HttpClientV2
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys
+import utils.TestUtils.given
 
 import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
-  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
-  val mockHttpClient: HttpClient = mock(classOf[HttpClient])
-  val mockAppConfig: AppConfig = mock(classOf[AppConfig])
-
   val vrn123456789: EnrolmentKey = EnrolmentKey(VAT, "123456789")
 
   class Setup {
-    reset(mockHttpClient)
-    reset(mockAppConfig)
+    val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2], RETURNS_DEEP_STUBS)
+    val mockAppConfig: AppConfig = mock(classOf[AppConfig])
 
-    val connector = new GetFinancialDetailsConnector(mockHttpClient, mockAppConfig)
-    when(mockAppConfig.getVatFinancialDetailsUrl(Matchers.any())).thenReturn("/VRN/123456789/VATC")
+    val connector = new GetFinancialDetailsConnector(mockHttpClient, mockAppConfig)(ExecutionContext.global)
+    when(mockAppConfig.getVatFinancialDetailsUrl(Matchers.any())).thenReturn("http://foo/VRN/123456789/VATC")
     when(mockAppConfig.eiOutboundBearerToken).thenReturn("1234")
     when(mockAppConfig.eisEnvironment).thenReturn("asdf")
     when(mockAppConfig.queryParametersForGetFinancialDetails).thenReturn("?foo=bar")
     when(mockAppConfig.addDateRangeQueryParameters()).thenReturn("&bar=wizz")
+
+    def mockGet[T](queryParams: String = "foo=bar&bar=wizz", response: Future[T]): Unit = {
+      when(mockHttpClient.get(
+          Matchers.eq(s"http://foo/VRN/123456789/VATC?$queryParams")
+        )(Matchers.any())
+        .setHeader(Matchers.any())
+        .execute(Matchers.any(), Matchers.any())
+      ).thenReturn(response)
+    }
   }
 
   val mockGetFinancialDetailsModelAPI1811: FinancialDetails = FinancialDetails(
@@ -70,130 +77,69 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
 
   "getFinancialDetails" should {
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModelAPI1811))))
+      mockGet("foo=bar&bar=wizz", Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModelAPI1811))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None)(HeaderCarrier()))
       result.isRight shouldBe true
     }
 
     "pass custom parameters when provided" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?custom=value&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModelAPI1811))))
-
+      mockGet("custom=value&bar=wizz", Future.successful(Right(GetFinancialDetailsSuccessResponse(mockGetFinancialDetailsModelAPI1811))))
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, Some("?custom=value"))(HeaderCarrier()))
       result.isRight shouldBe true
     }
 
     s"return a 404 when the call fails for Not Found" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
+      mockGet("foo=bar&bar=wizz", Future.successful(Left(GetFinancialDetailsFailureResponse(Status.NOT_FOUND))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
     s"return a 400 when the call fails for Bad Request" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.BAD_REQUEST))))
+      mockGet("foo=bar&bar=wizz", Future.successful(Left(GetFinancialDetailsFailureResponse(Status.BAD_REQUEST))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
     s"return a 409 when the call fails for Conflict" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.CONFLICT))))
+      mockGet("foo=bar&bar=wizz", Future.successful(Left(GetFinancialDetailsFailureResponse(Status.CONFLICT))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
     s"return a 422 when the call fails for Unprocessable Entity" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
+      mockGet("foo=bar&bar=wizz", Future.successful(Left(GetFinancialDetailsFailureResponse(Status.UNPROCESSABLE_ENTITY))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
     s"return a 500 when the call fails for Internal Server Error" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
+      mockGet("foo=bar&bar=wizz", Future.successful(Left(GetFinancialDetailsFailureResponse(Status.INTERNAL_SERVER_ERROR))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
     s"return a 403 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.FORBIDDEN))))
+      mockGet("foo=bar&bar=wizz", Future.successful(Left(GetFinancialDetailsFailureResponse(Status.FORBIDDEN))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
     s"return a 503 when the call fails" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(Left(GetFinancialDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
+      mockGet("foo=bar&bar=wizz", Future.successful(Left(GetFinancialDetailsFailureResponse(Status.SERVICE_UNAVAILABLE))))
 
       val result: GetFinancialDetailsResponse = await(connector.getFinancialDetails(vrn123456789, None)(HeaderCarrier()))
       result.isLeft shouldBe true
     }
 
     "return a 500 when the call fails due to an UpstreamErrorResponse(5xx) exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("Something weird happened", INTERNAL_SERVER_ERROR)))
+      mockGet("foo=bar&bar=wizz", Future.failed(UpstreamErrorResponse.apply("Something weird happened", INTERNAL_SERVER_ERROR)))
 
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -205,13 +151,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 400 when the call fails due to an UpstreamErrorResponse(4xx) exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("Something weird happened", BAD_REQUEST)))
+      mockGet("foo=bar&bar=wizz", Future.failed(UpstreamErrorResponse.apply("Something weird happened", BAD_REQUEST)))
 
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -223,13 +163,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 500 when the call fails due to an unexpected exception" in new Setup {
-      when(mockHttpClient.GET[GetFinancialDetailsResponse](Matchers.eq("/VRN/123456789/VATC?foo=bar&bar=wizz"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(new Exception("Something weird happened")))
+      mockGet("foo=bar&bar=wizz", Future.failed(new Exception("Something weird happened")))
 
       withCaptureOfLoggingFrom(logger) {
         logs => {
@@ -242,20 +176,15 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
   }
 
   "getFinancialDetailsForAPI" should {
-    val queryParams = s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
+    val queryParams = s"searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12&includeClearedItems=false" +
       s"&includeStatisticalItems=true&includePaymentOnAccount=true&addRegimeTotalisation=false&addLockInformation=true&addPenaltyDetails=true" +
       s"&addPostedInterestDetails=true&addAccruingInterestDetails=true"
-    val queryParamsSomeMissingFields = s"?searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12" +
+    val queryParamsSomeMissingFields = s"searchType=CHGREF&searchItem=XC00178236592&dateType=BILLING&dateFrom=2020-10-03&dateTo=2021-07-12" +
       s"&includeStatisticalItems=true&includePaymentOnAccount=true&addLockInformation=true&addPenaltyDetails=true" +
       s"&addPostedInterestDetails=true"
+
     "return a 200 when the call succeeds" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers = Map.empty)))
+      mockGet(queryParams, Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers = Map.empty)))
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         enrolmentKey = vrn123456789,
@@ -278,13 +207,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 200 when the call succeeds - with some missing fields" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParamsSomeMissingFields"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers =  Map.empty)))
+      mockGet(queryParamsSomeMissingFields, Future.successful(HttpResponse.apply(status = Status.OK, json = Json.toJson(mockGetFinancialDetailsModelAPI1811), headers = Map.empty)))
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         enrolmentKey = vrn123456789,
@@ -307,13 +230,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 403 when the call fails for Not Found (for 4xx errors)" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("You shall not pass", Status.FORBIDDEN)))
+      mockGet(queryParams, Future.failed(UpstreamErrorResponse.apply("You shall not pass", Status.FORBIDDEN)))
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         enrolmentKey = vrn123456789,
@@ -335,13 +252,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     s"return a 500 when the call fails for Internal Server Error (for 5xx errors)" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse.apply("Oops :(", Status.INTERNAL_SERVER_ERROR)))
+      mockGet(queryParams, Future.failed(UpstreamErrorResponse.apply("Oops :(", Status.INTERNAL_SERVER_ERROR)))
 
       val result: HttpResponse = await(connector.getFinancialDetailsForAPI(
         enrolmentKey = vrn123456789,
@@ -363,13 +274,7 @@ class GetFinancialDetailsConnectorSpec extends SpecBase with LogCapturing {
     }
 
     "return a 500 when the call fails due to an unexpected exception" in new Setup {
-      when(mockHttpClient.GET[HttpResponse](Matchers.eq(s"/VRN/123456789/VATC$queryParams"),
-        Matchers.any(),
-        Matchers.any())
-        (Matchers.any(),
-          Matchers.any(),
-          Matchers.any()))
-        .thenReturn(Future.failed(new Exception("Something weird happened")))
+      mockGet(queryParams, Future.failed(new Exception("Something weird happened")))
 
       withCaptureOfLoggingFrom(logger) {
         logs => {

@@ -30,7 +30,7 @@ import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEn
 import models.getPenaltyDetails.latePayment._
 import models.notification._
 import models.upload._
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers as Matchers
 import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.test.Helpers._

@@ -25,11 +25,14 @@ import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsObject, JsValue, Json}
-import play.api.test.Helpers._
+import play.api.libs.ws.DefaultBodyReadables.readableAsString
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_String
+import play.api.test.Helpers.*
 import utils.{AppealWiremock, ETMPWiremock, FileNotificationOrchestratorWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
   with AppealWiremock
@@ -77,33 +80,33 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
   val appealV2Json: JsValue = Json.parse(
     """
       |{
-      |  "type": "LATE_SUBMISSION",
-      |  "startDate": "2023-01-01",
       |  "endDate": "2023-12-31",
+      |  "dateCommunicationSent": "2024-02-08",
       |  "dueDate": "2024-02-07",
-      |  "dateCommunicationSent": "2024-02-08"
+      |  "type": "LATE_SUBMISSION",
+      |  "startDate": "2023-01-01"
       |}
       |""".stripMargin)
 
   val appealV2JsonLPP: JsValue = Json.parse(
     """
       |{
-      |  "type": "LATE_PAYMENT",
-      |	 "startDate": "2022-01-01",
       |	 "endDate" : "2022-12-31",
+      |  "dateCommunicationSent": "2023-02-08",
       |	 "dueDate" : "2023-02-07",
-      |  "dateCommunicationSent": "2023-02-08"
+      |  "type": "LATE_PAYMENT",
+      |	 "startDate": "2022-01-01"
       |}
       |""".stripMargin)
 
   val appealV2JsonLPPAdditional: JsValue = Json.parse(
     """
       |{
-      |  "type": "ADDITIONAL",
-      |	 "startDate": "2024-01-01",
       |	 "endDate" : "2024-12-31",
+      |  "dateCommunicationSent": "2025-02-08",
       |	 "dueDate" : "2025-02-07",
-      |  "dateCommunicationSent": "2025-02-08"
+      |  "type": "ADDITIONAL",
+      |	 "startDate": "2024-01-01"
       |}
       |""".stripMargin)
 
@@ -309,7 +312,7 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsJson.toString()))
         val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-submissions?penaltyId=123456789&enrolmentKey=$enrolmentKey").get())
         result.status shouldBe Status.OK
-        result.body shouldBe appealV2Json.toString()
+        result.json shouldBe appealV2Json
       }
 
       "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
@@ -330,14 +333,14 @@ class AppealsControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock
         mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsJson.toString()))
         val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-payments?penaltyId=1234567887&enrolmentKey=$enrolmentKey&isAdditional=false").get())
         result.status shouldBe Status.OK
-        result.body shouldBe appealV2JsonLPP.toString()
+        result.json shouldBe appealV2JsonLPP
       }
 
       "call ETMP and compare the penalty ID provided and the penalty ID in the payload for Additional - return OK if there is a match" in {
         mockStubResponseForGetPenaltyDetails(Status.OK, apiRegime, enrolmentKey.keyType.name, enrolmentKey.key, Some(getPenaltyDetailsJson.toString()))
         val result = await(buildClientForRequestToApp(uri = s"/appeals-data/late-payments?penaltyId=1234567889&enrolmentKey=$enrolmentKey&isAdditional=true").get())
         result.status shouldBe Status.OK
-        result.body shouldBe appealV2JsonLPPAdditional.toString()
+        result.json shouldBe appealV2JsonLPPAdditional
       }
 
       "return NOT_FOUND when the penalty ID given does not match the penalty ID in the payload" in {
