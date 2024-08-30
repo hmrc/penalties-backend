@@ -23,7 +23,7 @@ import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.mockito.Mockito.*
-import org.mockito.{Mockito, ArgumentMatchers as Matchers}
+import org.mockito.ArgumentMatchers as Matchers
 import play.api.test.Helpers.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
