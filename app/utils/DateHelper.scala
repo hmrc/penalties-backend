@@ -19,8 +19,8 @@ package utils
 import config.featureSwitches.FeatureSwitching
 import play.api.Configuration
 
-import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import javax.inject.Inject
 
 class DateHelper @Inject()(val config: Configuration) extends FeatureSwitching {

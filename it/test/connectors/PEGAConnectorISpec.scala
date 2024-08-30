@@ -20,7 +20,7 @@ import config.featureSwitches.{CallPEGA, FeatureSwitching}
 import models.EnrolmentKey
 import models.appeals.{AppealSubmission, CrimeAppealInformation}
 import play.api.http.Status
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import utils.{AppealWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDateTime

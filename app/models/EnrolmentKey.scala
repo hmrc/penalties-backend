@@ -69,7 +69,7 @@ object EnrolmentKey {
 }
 
 case class EnrolmentKey(regime: TaxRegime, keyType: EnrolmentKey.KeyType, key: String) {
-  import EnrolmentKey._
+  import EnrolmentKey.*
 
   // validate on construction
   (regime, keyType)  match {

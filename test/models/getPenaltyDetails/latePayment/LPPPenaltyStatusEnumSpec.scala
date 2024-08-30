@@ -17,7 +17,7 @@
 package models.getPenaltyDetails.latePayment
 
 import base.SpecBase
-import play.api.libs.json._
+import play.api.libs.json.*
 
 class LPPPenaltyStatusEnumSpec extends SpecBase {
   "be writable to JSON for 'Accruing' (A)" in {

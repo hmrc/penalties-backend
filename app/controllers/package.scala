@@ -15,8 +15,8 @@
  */
 
 import models.EnrolmentKey
-import models.EnrolmentKey._
-import models.TaxRegime._
+import models.EnrolmentKey.*
+import models.TaxRegime.*
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 

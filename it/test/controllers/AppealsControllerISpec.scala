@@ -25,7 +25,6 @@ import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsObject, JsValue, Json}
-import play.api.libs.ws.DefaultBodyReadables.readableAsString
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.writeableOf_String
 import play.api.test.Helpers.*

@@ -16,7 +16,7 @@
 
 package models.getPenaltyDetails.lateSubmission
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object ExpiryReasonEnum extends Enumeration {
   val Appeal: ExpiryReasonEnum.Value = Value("APP")

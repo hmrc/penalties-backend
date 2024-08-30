@@ -16,7 +16,7 @@
 
 package models.getPenaltyDetails.latePayment
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object LPPPenaltyStatusEnum extends Enumeration {
   val Accruing: LPPPenaltyStatusEnum.Value = Value("A")

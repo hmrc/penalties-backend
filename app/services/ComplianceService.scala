@@ -22,7 +22,7 @@ import connectors.parsers.ComplianceParser
 import models.EnrolmentKey
 import models.compliance.CompliancePayload
 import play.api.Configuration
-import play.api.http.Status._
+import play.api.http.Status.*
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 

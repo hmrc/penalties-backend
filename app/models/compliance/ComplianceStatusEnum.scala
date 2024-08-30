@@ -16,7 +16,7 @@
 
 package models.compliance
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object ComplianceStatusEnum extends Enumeration {
   val open: ComplianceStatusEnum.Value = Value("O")

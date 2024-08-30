@@ -16,7 +16,7 @@
 
 package models.getPenaltyDetails.lateSubmission
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object TaxReturnStatusEnum extends Enumeration {
   val Open: TaxReturnStatusEnum.Value = Value
@@ -24,7 +24,7 @@ object TaxReturnStatusEnum extends Enumeration {
   val Reversed: TaxReturnStatusEnum.Value = Value
 
   implicit val format: Format[TaxReturnStatusEnum.Value] = new Format[TaxReturnStatusEnum.Value] {
-    override def writes(o: TaxReturnStatusEnum.Value): JsValue = JsString(o.toString())
+    override def writes(o: TaxReturnStatusEnum.Value): JsValue = JsString(o.toString)
 
     override def reads(json: JsValue): JsResult[TaxReturnStatusEnum.Value] = json.as[String].toUpperCase match {
       case "OPEN" => JsSuccess(Open)

@@ -16,7 +16,7 @@
 
 package models.getPenaltyDetails.appealInfo
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object AppealLevelEnum extends Enumeration {
 

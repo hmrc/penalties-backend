@@ -17,11 +17,11 @@
 package services
 
 import config.featureSwitches.FeatureSwitching
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.*
 import models.EnrolmentKey
 import models.TaxRegime.{ITSA, VAT}
-import models.getFinancialDetails._
-import models.getFinancialDetails.totalisation._
+import models.getFinancialDetails.*
+import models.getFinancialDetails.totalisation.*
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR}

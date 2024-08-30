@@ -17,12 +17,12 @@
 package connectors.parsers
 
 import models.compliance.CompliancePayload
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
-import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.PagerDutyHelper.PagerDutyKeys.*
 
 object ComplianceParser {
   sealed trait GetCompliancePayloadFailure {
@@ -58,15 +58,13 @@ object ComplianceParser {
               logger.debug(s"[ComplianceCompliancePayloadReads][read] Json validation errors: $errors")
               Left(CompliancePayloadMalformed)
           }
-        case NOT_FOUND => {
+        case NOT_FOUND =>
           logger.info(s"[ComplianceParser][read] - Received not found response from . No data associated with VRN. Body: ${response.body}")
           Left(CompliancePayloadNoData)
-        }
-        case BAD_REQUEST => {
+        case BAD_REQUEST =>
           PagerDutyHelper.log("ComplianceCompliancePayloadReads", RECEIVED_4XX_FROM_1330_API)
           logger.error(s"[ComplianceParser][read] - Failed to parse to model with response body: ${response.body} (Status: $BAD_REQUEST)")
           Left(CompliancePayloadFailureResponse(BAD_REQUEST))
-        }
         case INTERNAL_SERVER_ERROR =>
           PagerDutyHelper.log("ComplianceCompliancePayloadReads", RECEIVED_5XX_FROM_1330_API)
           logger.error(s"[ComplianceCompliancePayloadReads][read] Received ISE when trying to call 1330 API - with body: ${response.body}")

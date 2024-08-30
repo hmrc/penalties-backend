@@ -16,7 +16,7 @@
 
 package models.communication
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object CommunicationTypeEnum extends Enumeration {
   val secureMessage: CommunicationTypeEnum.Value = Value

@@ -18,12 +18,12 @@ package connectors.parsers.getFinancialDetails
 
 import models.failure.{FailureCodeEnum, FailureResponse}
 import models.getFinancialDetails.{FinancialDetails, GetFinancialData}
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
-import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.PagerDutyHelper.PagerDutyKeys.*
 
 import scala.util.Try
 
@@ -54,22 +54,19 @@ object GetFinancialDetailsParser {
               logger.debug(s"[GetFinancialDetailsReads][read] Json validation errors: $errors")
               Left(GetFinancialDetailsMalformed)
           }
-        case NOT_FOUND if response.body.nonEmpty => {
+        case NOT_FOUND if response.body.nonEmpty =>
           Try(handleNotFoundStatusBody(response.json)).fold(parseError => {
             logger.error(s"[GetFinancialDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
             PagerDutyHelper.log("GetPenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1811_API)
             Left(GetFinancialDetailsFailureResponse(NOT_FOUND))
           }, identity)
-        }
-        case NO_CONTENT => {
+        case NO_CONTENT =>
           logger.info("[GetFinancialDetailsReads][read] Received no content from 1811 call")
           Left(GetFinancialDetailsNoContent)
-        }
-        case status@(BAD_REQUEST | FORBIDDEN | NOT_FOUND | CONFLICT | UNPROCESSABLE_ENTITY | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
+        case status@(BAD_REQUEST | FORBIDDEN | NOT_FOUND | CONFLICT | UNPROCESSABLE_ENTITY | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) =>
           PagerDutyHelper.logStatusCode("GetFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
           logger.error(s"[GetFinancialDetailsReads][read] Received $status when trying to call GetFinancialDetails - with body: ${response.body}")
           Left(GetFinancialDetailsFailureResponse(status))
-        }
         case _@status =>
           PagerDutyHelper.logStatusCode("GetFinancialDetailsReads", status)(RECEIVED_4XX_FROM_1811_API, RECEIVED_5XX_FROM_1811_API)
           logger.error(s"[GetFinancialDetailsReads][read] Received unexpected response from GetFinancialDetails, status code: $status and body: ${response.body}")

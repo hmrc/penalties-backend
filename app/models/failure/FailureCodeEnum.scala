@@ -16,7 +16,7 @@
 
 package models.failure
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object FailureCodeEnum extends Enumeration {
   val NoDataFound: FailureCodeEnum.Value = Value("NO_DATA_FOUND")

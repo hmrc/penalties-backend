@@ -21,19 +21,19 @@ import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
 import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.{GetFinancialDetailsFailureResponse, GetFinancialDetailsMalformed, GetFinancialDetailsNoContent, GetFinancialDetailsSuccessResponse}
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.*
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment._
+import models.getPenaltyDetails.latePayment.*
 import models.getPenaltyDetails.lateSubmission.{LSPSummary, LateSubmissionPenalty}
-import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.*
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Result}
-import play.api.test.Helpers._
-import services._
+import play.api.test.Helpers.*
+import services.*
 import services.auditing.AuditService
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.DateHelper

@@ -22,7 +22,7 @@ import play.api.libs.json.JsSuccess
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
-import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.PagerDutyHelper.PagerDutyKeys.*
 
 object AppealsParser {
   type AppealSubmissionResponse = Either[ErrorResponse, AppealResponseModel]

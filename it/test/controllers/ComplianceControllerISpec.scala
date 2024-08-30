@@ -19,7 +19,7 @@ package controllers
 import config.featureSwitches.{CallDES, FeatureSwitching}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.Json
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
 
 class ComplianceControllerISpec extends IntegrationSpecCommonBase with ComplianceWiremock with FeatureSwitching with TableDrivenPropertyChecks {

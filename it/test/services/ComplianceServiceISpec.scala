@@ -17,13 +17,13 @@
 package services
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
-import connectors.parsers.ComplianceParser._
+import connectors.parsers.ComplianceParser.*
 import models.EnrolmentKey
 import models.TaxRegime.{ITSA, VAT}
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.{JsValue, Json}
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
 
 import java.time.LocalDate

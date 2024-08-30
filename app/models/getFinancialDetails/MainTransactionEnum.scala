@@ -16,7 +16,7 @@
 
 package models.getFinancialDetails
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object MainTransactionEnum extends Enumeration {
   val VATReturnCharge: MainTransactionEnum.Value = Value("4700")

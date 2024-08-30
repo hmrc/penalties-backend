@@ -16,16 +16,16 @@
 
 package config
 
-import config.featureSwitches._
-import org.mockito.{ArgumentMatchers => Matchers}
+import config.featureSwitches.*
+import org.mockito.ArgumentMatchers as Matchers
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
-import org.scalatest.matchers.should.{Matchers => ShouldMatchers}
+import org.mockito.Mockito.*
+import org.scalatest.matchers.should.Matchers as ShouldMatchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import java.time.{LocalDateTime, LocalDate}
+import java.time.{LocalDate, LocalDateTime}
 
 class AppConfigSpec extends AnyWordSpec with ShouldMatchers with FeatureSwitching {
   val mockConfiguration: Configuration = mock(classOf[Configuration])

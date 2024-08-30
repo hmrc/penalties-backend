@@ -19,7 +19,7 @@ package services
 import base.{LogCapturing, SpecBase}
 import config.featureSwitches.FeatureSwitching
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.*
 import models.TaxRegime.VAT
 import models.getFinancialDetails.FinancialDetails
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
@@ -29,7 +29,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import play.api.http.Status.IM_A_TEAPOT
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 

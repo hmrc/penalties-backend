@@ -20,8 +20,8 @@ import base.LogCapturing
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsSuccessResponse}
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails.latePayment.{LPPDetails, LPPDetailsMetadata, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
 import models.getPenaltyDetails.GetPenaltyDetails
+import models.getPenaltyDetails.latePayment.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status

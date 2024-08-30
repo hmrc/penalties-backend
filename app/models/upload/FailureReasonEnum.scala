@@ -16,7 +16,7 @@
 
 package models.upload
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object FailureReasonEnum extends Enumeration {
   val QUARANTINE: FailureReasonEnum.Value = Value

@@ -17,7 +17,7 @@
 package models.appeals
 
 import models.upload.UploadJourney
-import play.api.libs.json._
+import play.api.libs.json.*
 import utils.DateHelper.addUtcTimeZone
 
 import java.time.{LocalDateTime, ZoneOffset}

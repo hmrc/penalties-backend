@@ -17,7 +17,7 @@
 package models.auditing
 
 import base.{LogCapturing, SpecBase}
-import models.notification._
+import models.notification.*
 import play.api.libs.json.Json
 
 class PenaltyAppealFileNotificationStorageFailureModelSpec extends SpecBase with LogCapturing {

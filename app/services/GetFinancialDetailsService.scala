@@ -17,7 +17,7 @@
 package services
 
 import connectors.getFinancialDetails.GetFinancialDetailsConnector
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.*
 import models.EnrolmentKey
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier

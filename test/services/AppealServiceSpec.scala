@@ -23,17 +23,17 @@ import connectors.PEGAConnector
 import connectors.parsers.AppealsParser
 import connectors.parsers.AppealsParser.UnexpectedFailure
 import models.EnrolmentKey
-import models.appeals._
+import models.appeals.*
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment._
-import models.notification._
-import models.upload._
+import models.getPenaltyDetails.latePayment.*
+import models.notification.*
+import models.upload.*
 import org.mockito.ArgumentMatchers as Matchers
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import play.api.Configuration
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.Logger.logger
 import utils.UUIDGenerator

@@ -22,23 +22,23 @@ import connectors.FileNotificationOrchestratorConnector
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.GetPenaltyDetailsSuccessResponse
 import models.EnrolmentKey
-import models.appeals.AppealTypeEnum._
-import models.appeals._
+import models.appeals.*
+import models.appeals.AppealTypeEnum.*
 import models.appeals.reasonableExcuses.ReasonableExcuse
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.LPPDetails
 import models.getPenaltyDetails.lateSubmission.LSPDetails
-import models.notification._
+import models.notification.*
 import play.api.Configuration
 import play.api.libs.json.Json
-import play.api.mvc._
+import play.api.mvc.*
 import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.PagerDutyHelper.PagerDutyKeys.*
 import utils.{PagerDutyHelper, PenaltyPeriodHelper}
 
 import javax.inject.{Inject, Singleton}
@@ -188,11 +188,10 @@ class AppealsController @Inject()(val appConfig: AppConfig,
                     returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}, correlation ID: $correlationId) but received $status response from file notification orchestrator")(responseModel.caseID)
                 }
             }.recover {
-              case e => {
+              case e =>
                 logger.error(s"[AppealsController][submitAppeal] Unable to store file notification for user with enrolment: $enrolmentKey penalty $penaltyNumber (correlation ID: $correlationId) - An unknown exception occurred when attempting to store file notifications, with error: ${e.getMessage}")
                 auditStorageFailureOfFileNotifications(seqOfNotifications)
                 returnErrorResponseIfMultiAppeal(isMultiAppeal)(s"Appeal submitted (case ID: ${responseModel.caseID}, correlation ID: $correlationId) but failed to store file uploads with unknown error")(responseModel.caseID)
-              }
             }
           } else {
             val submissionResponseModel = AppealSubmissionResponseModel(caseId = Some(responseModel.caseID), status = OK)
@@ -229,23 +228,19 @@ class AppealsController @Inject()(val appConfig: AppConfig,
 
   private def handleFailureResponse(response: GetPenaltyDetailsParser.GetPenaltyDetailsFailure, enrolmentKey: EnrolmentKey)(callingMethod: String): Result = {
     response match {
-      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND =>
         logger.info(s"[AppealsController][$callingMethod] - 1812 call returned 404 for enrolment key: $enrolmentKey")
         NotFound(s"A downstream call returned 404 for ${enrolmentKey.info}")
-      }
-      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
+      case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) =>
         logger.error(s"[AppealsController][$callingMethod] - 1812 call returned an unexpected status: $status for ${enrolmentKey.info}")
         InternalServerError(s"A downstream call returned an unexpected status: $status")
-      }
-      case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+      case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed =>
         PagerDutyHelper.log(callingMethod, MALFORMED_RESPONSE_FROM_1812_API)
         logger.error(s"[AppealsController][$callingMethod] - Failed to parse penalty details response for ${enrolmentKey.info}")
         InternalServerError("We were unable to parse penalty data.")
-      }
-      case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
+      case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent =>
         logger.info(s"s[AppealsController][$callingMethod] - 1812 call returned no content for ${enrolmentKey.info}")
         InternalServerError(s"Returned no content for ${enrolmentKey.info}")
-      }
     }
   }
 
