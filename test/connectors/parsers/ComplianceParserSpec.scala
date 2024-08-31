@@ -17,11 +17,11 @@
 package connectors.parsers
 
 import base.LogCapturing
-import connectors.parsers.ComplianceParser._
+import connectors.parsers.ComplianceParser.*
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
 import utils.Logger.logger

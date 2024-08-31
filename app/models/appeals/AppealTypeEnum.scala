@@ -16,7 +16,7 @@
 
 package models.appeals
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object AppealTypeEnum extends Enumeration {
   val Late_Submission: AppealTypeEnum.Value = Value

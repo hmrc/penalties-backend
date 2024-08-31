@@ -17,7 +17,7 @@
 package models.appeals.reasonableExcuses
 
 import base.SpecBase
-import models.appeals.reasonableExcuses.ReasonableExcuse._
+import models.appeals.reasonableExcuses.ReasonableExcuse.*
 import play.api.libs.json.{JsValue, Json}
 
 class ReasonableExcuseSpec extends SpecBase {

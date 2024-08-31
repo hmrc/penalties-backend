@@ -16,7 +16,7 @@
 
 package config
 
-import config.featureSwitches._
+import config.featureSwitches.*
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 

@@ -16,20 +16,21 @@
 
 package connectors.getPenaltyDetails
 
-import java.time.LocalDate
 import config.featureSwitches.{CallAPI1812ETMP, FeatureSwitching}
 import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyDetailsFailureResponse, GetPenaltyDetailsMalformed, GetPenaltyDetailsNoContent, GetPenaltyDetailsResponse, GetPenaltyDetailsSuccessResponse}
 import models.EnrolmentKey
 import models.TaxRegime.{ITSA, VAT}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealStatusEnum}
-import models.getPenaltyDetails.lateSubmission._
+import models.getPenaltyDetails.lateSubmission.*
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.http.Status.IM_A_TEAPOT
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
+
+import java.time.LocalDate
 
 class GetPenaltyDetailsConnectorISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
 

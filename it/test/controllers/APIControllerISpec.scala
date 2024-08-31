@@ -23,10 +23,10 @@ import models.TaxRegime.{ITSA, VAT}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import utils.{ETMPWiremock, IntegrationSpecCommonBase}
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock with FeatureSwitching with TableDrivenPropertyChecks {
   val controller: APIController = injector.instanceOf[APIController]

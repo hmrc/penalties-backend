@@ -18,13 +18,13 @@ package services
 
 import base.SpecBase
 import connectors.ComplianceConnector
-import connectors.parsers.ComplianceParser._
+import connectors.parsers.ComplianceParser.*
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.compliance.CompliancePayload
 import org.mockito.ArgumentMatchers as Matchers
-import org.mockito.Mockito._
-import play.api.test.Helpers._
+import org.mockito.Mockito.*
+import play.api.test.Helpers.*
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}

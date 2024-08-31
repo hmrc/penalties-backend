@@ -16,7 +16,7 @@
 
 package models.getPenaltyDetails.lateSubmission
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object LSPPenaltyStatusEnum extends Enumeration {
   val Active: LSPPenaltyStatusEnum.Value = Value("ACTIVE")

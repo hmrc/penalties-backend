@@ -17,14 +17,14 @@
 package services
 
 import config.featureSwitches.FeatureSwitching
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.*
 import models.EnrolmentKey
 import models.TaxRegime.{ITSA, VAT}
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.lateSubmission._
+import models.getPenaltyDetails.latePayment.*
+import models.getPenaltyDetails.lateSubmission.*
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status

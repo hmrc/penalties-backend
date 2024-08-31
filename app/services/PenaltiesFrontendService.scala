@@ -17,12 +17,12 @@
 package services
 
 import config.AppConfig
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.*
 import models.EnrolmentKey
 import models.auditing.UserHasPenaltyAuditModel
 import models.getFinancialDetails.MainTransactionEnum.ManualLPP
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails}
-import models.getPenaltyDetails.latePayment._
+import models.getPenaltyDetails.latePayment.*
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import play.api.http.Status.NOT_FOUND
 import play.api.libs.json.Json
@@ -92,19 +92,16 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
                                                 (handleNoContent: => Result): Result = {
     financialDetailsResponseWithClearedItems match {
       case GetFinancialDetailsNoContent => handleNoContent
-      case GetFinancialDetailsFailureResponse(status) if status == NOT_FOUND => {
+      case GetFinancialDetailsFailureResponse(status) if status == NOT_FOUND =>
         logger.info(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned 404 for ${enrolmentKey.info}")
         NotFound(s"A downstream call returned 404 for ${enrolmentKey.info}")
-      }
-      case GetFinancialDetailsFailureResponse(status) => {
+      case GetFinancialDetailsFailureResponse(status) =>
         logger.error(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned an unexpected status: $status")
         InternalServerError(s"A downstream call returned an unexpected status: $status")
-      }
-      case GetFinancialDetailsMalformed => {
+      case GetFinancialDetailsMalformed =>
         PagerDutyHelper.log("getPenaltiesData", MALFORMED_RESPONSE_FROM_1811_API)
         logger.error(s"[PenaltiesFrontendController][handleAndCombineGetFinancialDetailsData] - 1811 call returned invalid body - failed to parse financial details response for ${enrolmentKey.info}")
         InternalServerError(s"We were unable to parse penalty data.")
-      }
     }
   }
 
@@ -198,7 +195,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
     ).fold[Option[BigDecimal]](None)(amount => if(amount == BigDecimal(0)) None else Some(amount))
     (financialDetails.totalisation.isDefined, penaltyDetails.totalisations.isDefined) match {
       //If there is totalisations already, add to it
-      case (_, true) => {
+      case (_, true) =>
         val newTotalisations: Option[Totalisations] = penaltyDetails.totalisations.map(
           oldTotalisations => {
             oldTotalisations.copy(
@@ -210,8 +207,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
           }
         )
         penaltyDetails.copy(totalisations = newTotalisations)
-      }
-      case (true, false) => {
+      case (true, false) =>
         //If there is no totalisations already, create a new object
         val totalisations: Totalisations = new Totalisations(
           totalAccountOverdue = financialDetails.totalisation.flatMap(_.regimeTotalisations.flatMap(_.totalAccountOverdue)),
@@ -223,15 +219,13 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
           LPPEstimatedTotal = None
         )
         penaltyDetails.copy(totalisations = Some(totalisations))
-      }
-      case _ => {
+      case _ =>
         //No totalisations at all, don't do any processing on totalisation field (except adding LPPPostedTotal for Manual LPPs
         val totalisations: Totalisations = new Totalisations(totalAccountOverdue = None, totalAccountPostedInterest = None,
           totalAccountAccruingInterest = None, LSPTotalValue = None, penalisedPrincipalTotal = None, LPPEstimatedTotal = None,
           LPPPostedTotal = totalAmountOfManualLPPs
         )
         penaltyDetails.copy(totalisations = Some(totalisations))
-      }
     }
   }
 }

@@ -20,10 +20,10 @@ import base.{LogCapturing, SpecBase}
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum
-import models.getPenaltyDetails._
+import models.getPenaltyDetails.*
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.lateSubmission._
+import models.getPenaltyDetails.latePayment.*
+import models.getPenaltyDetails.lateSubmission.*
 import org.mockito.Mockito.{mock, when}
 import utils.{DateHelper, Logger}
 

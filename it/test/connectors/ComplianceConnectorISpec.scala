@@ -17,13 +17,13 @@
 package connectors
 
 import config.featureSwitches.{CallDES, FeatureSwitching}
-import connectors.parsers.ComplianceParser._
+import connectors.parsers.ComplianceParser.*
 import models.EnrolmentKey
 import models.TaxRegime.{ITSA, VAT}
 import models.compliance.{CompliancePayload, ComplianceStatusEnum, ObligationDetail, ObligationIdentification}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.http.Status
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import utils.{ComplianceWiremock, IntegrationSpecCommonBase}
 
 import java.time.{LocalDate, LocalDateTime}
@@ -45,7 +45,7 @@ class ComplianceConnectorISpec extends IntegrationSpecCommonBase with Compliance
     ("VATC", "vrn", EnrolmentKey(VAT, "123456789")),
     ("ITSA", "nino", EnrolmentKey(ITSA, "AB123456C"))
   ).forEvery { (apiRegime, idType, enrolmentKey) =>
-    import enrolmentKey._
+    import enrolmentKey.*
 
     s"getComplianceData for $apiRegime" should {
       "call DES and handle a successful response" in new Setup {

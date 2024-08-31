@@ -24,7 +24,7 @@ import models.EnrolmentKey
 import models.appeals.{AppealResponseModel, AppealSubmission, MultiplePenaltiesData}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPDetails, LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum}
-import models.notification._
+import models.notification.*
 import models.upload.UploadJourney
 import play.api.Configuration
 import utils.Logger.logger

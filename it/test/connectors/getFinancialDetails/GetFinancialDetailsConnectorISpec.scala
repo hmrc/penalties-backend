@@ -17,7 +17,7 @@
 package connectors.getFinancialDetails
 
 import config.featureSwitches.{CallAPI1811ETMP, FeatureSwitching}
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.*
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import play.api.http.Status

@@ -18,14 +18,14 @@ package services
 
 import base.{LPPDetailsBase, LSPDetailsBase, LogCapturing, SpecBase}
 import config.AppConfig
-import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser._
+import connectors.parsers.getFinancialDetails.GetFinancialDetailsParser.*
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum.ManualLPP
 import models.getFinancialDetails.totalisation.{FinancialDetailsTotalisation, InterestTotalisation, RegimeTotalisation}
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
-import models.getPenaltyDetails.latePayment._
+import models.getPenaltyDetails.latePayment.*
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import org.mockito.ArgumentMatchers as Matchers
 import org.mockito.Mockito.{mock, reset, when}
@@ -34,7 +34,7 @@ import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results.{Gone, Ok}
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.auditing.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.DateHelper

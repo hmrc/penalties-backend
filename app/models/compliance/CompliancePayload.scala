@@ -16,7 +16,7 @@
 
 package models.compliance
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 case class CompliancePayload(
                               identification: Option[ObligationIdentification],
@@ -27,9 +27,7 @@ object CompliancePayload {
   implicit val writes: OWrites[CompliancePayload] = Json.writes[CompliancePayload]
   implicit val reads: Reads[CompliancePayload] = Json.reads[CompliancePayload]
 
-  val seqReads: Reads[Seq[CompliancePayload]] = new Reads[Seq[CompliancePayload]] {
-    override def reads(json: JsValue): JsResult[Seq[CompliancePayload]] = {
-      (json \ "obligations").validate[Seq[CompliancePayload]](Reads.seq[CompliancePayload])
-    }
+  val seqReads: Reads[Seq[CompliancePayload]] = (json: JsValue) => {
+    (json \ "obligations").validate[Seq[CompliancePayload]](Reads.seq[CompliancePayload])
   }
 }

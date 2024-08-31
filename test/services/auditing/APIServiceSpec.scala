@@ -19,9 +19,10 @@ package services.auditing
 import base.SpecBase
 import models.getFinancialDetails.{DocumentDetails, FinancialDetails, LineItemDetails, MainTransactionEnum}
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.lateSubmission._
+import models.getPenaltyDetails.latePayment.*
+import models.getPenaltyDetails.lateSubmission.*
 import services.APIService
+
 import java.time.LocalDate
 
 class APIServiceSpec extends SpecBase {

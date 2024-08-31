@@ -18,7 +18,7 @@ package services
 
 import config.featureSwitches.FeatureSwitching
 import connectors.getPenaltyDetails.GetPenaltyDetailsConnector
-import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser._
+import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.*
 import models.EnrolmentKey
 import play.api.Configuration
 import uk.gov.hmrc.http.HeaderCarrier

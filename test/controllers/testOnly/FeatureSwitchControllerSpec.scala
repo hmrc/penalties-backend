@@ -23,7 +23,7 @@ import org.mockito.Mockito.{mock, reset, when}
 import play.api.Configuration
 import play.api.http.Status
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 
 import java.time.{LocalDate, LocalDateTime}
 import scala.language.postfixOps

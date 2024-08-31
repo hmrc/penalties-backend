@@ -16,18 +16,16 @@
 
 package models.getFinancialDetails
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 case class GetFinancialData(financialDetails: FinancialDetails)
 
 object GetFinancialData {
-  implicit val reads: Reads[GetFinancialData] = new Reads[GetFinancialData] {
-    override def reads(json: JsValue): JsResult[GetFinancialData] = {
-      for {
-        financialDetails <- (json \ "getFinancialData" \ "financialDetails").validate[FinancialDetails]
-      } yield {
-        GetFinancialData(financialDetails)
-      }
+  implicit val reads: Reads[GetFinancialData] = (json: JsValue) => {
+    for {
+      financialDetails <- (json \ "getFinancialData" \ "financialDetails").validate[FinancialDetails]
+    } yield {
+      GetFinancialData(financialDetails)
     }
   }
 

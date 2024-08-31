@@ -30,13 +30,13 @@ import models.getFinancialDetails.FinancialDetails
 import models.getPenaltyDetails.GetPenaltyDetails
 import play.api.Configuration
 import play.api.libs.json.{JsString, JsValue, Json}
-import play.api.mvc._
+import play.api.mvc.*
 import services.auditing.AuditService
 import services.{APIService, FilterService, GetFinancialDetailsService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.Logger.logger
-import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.PagerDutyHelper.PagerDutyKeys.*
 import utils.{DateHelper, PagerDutyHelper}
 
 import javax.inject.Inject
@@ -55,32 +55,27 @@ class APIController @Inject()(auditService: AuditService,
   def getSummaryData(regime: String, id: String): Action[AnyContent] = Action.async {
     implicit request => {
       composeEnrolmentKey(regime, id).andThen { enrolmentKey =>
-        import enrolmentKey._
+        import enrolmentKey.*
         getPenaltyDetailsService.getDataFromPenaltyService(enrolmentKey).flatMap {
           _.fold({
-            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND => {
+            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == NOT_FOUND =>
               //logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn")
               Future(NotFound(s"A downstream call returned 404 for $keyType: $key"))
-            }
-            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY => {
+            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) if status == UNPROCESSABLE_ENTITY =>
               //Temporary measure to avoid 422 causing issues
               val responsePayload = GetPenaltyDetailsSuccessResponse(GetPenaltyDetails(totalisations = None, lateSubmissionPenalty = None, latePaymentPenalty = None, breathingSpace = None))
               //logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned $status for VRN: $vrn - Overriding response")
               Future(returnResponseForAPI(responsePayload.penaltyDetails, enrolmentKey))
-            }
-            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) => {
+            case GetPenaltyDetailsParser.GetPenaltyDetailsFailureResponse(status) =>
               //logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned an unexpected status: $status")
               Future(InternalServerError(s"A downstream call returned an unexpected status: $status for $info"))
-            }
-            case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed => {
+            case GetPenaltyDetailsParser.GetPenaltyDetailsMalformed =>
               PagerDutyHelper.log("getSummaryDataForVRN", MALFORMED_RESPONSE_FROM_1812_API)
               //logger.error(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned invalid body - failed to parse penalty details response for VRN: $vrn")
               Future(InternalServerError(s"We were unable to parse penalty data."))
-            }
-            case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent => {
+            case GetPenaltyDetailsParser.GetPenaltyDetailsNoContent =>
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned no content for $info")
               Future(NoContent)
-            }
           },
             success => {
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for $info")

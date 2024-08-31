@@ -23,12 +23,12 @@ import models.EnrolmentKey.*
 import models.TaxRegime.{ITSA, VAT}
 import models.compliance.CompliancePayload
 import play.api.http.Status.INTERNAL_SERVER_ERROR
+import uk.gov.hmrc.http.HttpReads.Implicits.given
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
 import utils.PagerDutyHelper.PagerDutyKeys.*
-import uk.gov.hmrc.http.HttpReads.Implicits.given
 
 import java.net.URL
 import javax.inject.Inject

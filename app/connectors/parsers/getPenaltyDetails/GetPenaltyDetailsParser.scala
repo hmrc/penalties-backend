@@ -19,12 +19,12 @@ package connectors.parsers.getPenaltyDetails
 import models.failure.{FailureCodeEnum, FailureResponse}
 import models.getPenaltyDetails.GetPenaltyDetails
 import models.getPenaltyDetails.latePayment.{LPPPenaltyCategoryEnum, LPPPenaltyStatusEnum, LatePaymentPenalty}
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import utils.Logger.logger
 import utils.PagerDutyHelper
-import utils.PagerDutyHelper.PagerDutyKeys._
+import utils.PagerDutyHelper.PagerDutyKeys.*
 
 import java.time.LocalDate
 import scala.util.Try
@@ -57,27 +57,23 @@ object GetPenaltyDetailsParser {
               logger.debug(s"[GetPenaltyDetailsReads][read] Json validation errors: $errors")
               Left(GetPenaltyDetailsMalformed)
           }
-        case NOT_FOUND if response.body.nonEmpty => {
+        case NOT_FOUND if response.body.nonEmpty =>
           Try(handleNotFoundStatusBody(response.json)).fold(parseError => {
             logger.error(s"[GetPenaltyDetailsReads][read] Could not parse 404 body with error ${parseError.getMessage}")
             PagerDutyHelper.log("GetPenaltyDetailsReads", INVALID_JSON_RECEIVED_FROM_1812_API)
             Left(GetPenaltyDetailsFailureResponse(NOT_FOUND))
           }, identity)
-        }
-        case status@(NOT_FOUND | BAD_REQUEST | CONFLICT | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) => {
+        case status@(NOT_FOUND | BAD_REQUEST | CONFLICT | INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE) =>
           PagerDutyHelper.logStatusCode("GetPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
           logger.error(s"[GetPenaltyDetailsReads][read] Received $status when trying to call GetPenaltyDetails - with body: ${response.body}")
           Left(GetPenaltyDetailsFailureResponse(status))
-        }
-        case status@NO_CONTENT => {
+        case status@NO_CONTENT =>
           logger.debug(s"[GetPenaltyDetailsReads][read] Received 204 when calling ETMP")
           Left(GetPenaltyDetailsFailureResponse(status))
-        }
-        case status@UNPROCESSABLE_ENTITY => {
+        case status@UNPROCESSABLE_ENTITY =>
           PagerDutyHelper.log("GetPenaltyDetailsReads", RECEIVED_4XX_FROM_1812_API)
           logger.error(s"[GetPenaltyDetailsReads][read] Received 422 when trying to call GetPenaltyDetails - with body: ${response.body}")
           Left(GetPenaltyDetailsFailureResponse(status))
-        }
         case _@status =>
           PagerDutyHelper.logStatusCode("GetPenaltyDetailsReads", status)(RECEIVED_4XX_FROM_1812_API, RECEIVED_5XX_FROM_1812_API)
           logger.error(s"[GetPenaltyDetailsReads][read] Received unexpected response from GetPenaltyDetails, status code: $status and body: ${response.body}")

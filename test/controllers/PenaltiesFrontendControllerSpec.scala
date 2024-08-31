@@ -21,14 +21,14 @@ import connectors.parsers.getPenaltyDetails.GetPenaltyDetailsParser.{GetPenaltyD
 import models.EnrolmentKey
 import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum.{VATReturnFirstLPP, VATReturnSecondLPP}
-import models.getPenaltyDetails.latePayment._
+import models.getPenaltyDetails.latePayment.*
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import org.mockito.ArgumentMatchers as Matchers
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.Results.{InternalServerError, Ok}
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.{GetPenaltyDetailsService, PenaltiesFrontendService}
 import utils.Logger.logger
 import utils.PagerDutyHelper.PagerDutyKeys

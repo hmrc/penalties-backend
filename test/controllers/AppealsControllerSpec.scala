@@ -29,19 +29,18 @@ import models.appeals.{AppealData, MultiplePenaltiesData}
 import models.auditing.PenaltyAppealFileNotificationStorageFailureModel
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.GetPenaltyDetails
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.lateSubmission._
-import models.notification._
-import org.mockito.ArgumentMatchers as Matchers
+import models.getPenaltyDetails.latePayment.*
+import models.getPenaltyDetails.lateSubmission.*
+import models.notification.*
+import org.mockito.{ArgumentCaptor, ArgumentMatchers as Matchers}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
-import org.mockito.ArgumentCaptor
+import org.mockito.Mockito.*
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.Result
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.auditing.AuditService
 import services.{AppealService, GetPenaltyDetailsService}
 import uk.gov.hmrc.http.HttpResponse

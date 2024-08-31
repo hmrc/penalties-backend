@@ -16,7 +16,7 @@
 
 package models.getPenaltyDetails.latePayment
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 object LPPPenaltyCategoryEnum extends Enumeration {
   val FirstPenalty: LPPPenaltyCategoryEnum.Value = Value("LPP1")

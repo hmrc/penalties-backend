@@ -26,8 +26,8 @@ import models.TaxRegime.VAT
 import models.getFinancialDetails.MainTransactionEnum
 import models.getPenaltyDetails.appealInfo.{AppealInformationType, AppealLevelEnum, AppealStatusEnum}
 import models.getPenaltyDetails.breathingSpace.BreathingSpace
-import models.getPenaltyDetails.latePayment._
-import models.getPenaltyDetails.lateSubmission._
+import models.getPenaltyDetails.latePayment.*
+import models.getPenaltyDetails.lateSubmission.*
 import models.getPenaltyDetails.{GetPenaltyDetails, Totalisations}
 import org.mockito.ArgumentMatchers as Matchers
 import org.mockito.ArgumentMatchers.any
