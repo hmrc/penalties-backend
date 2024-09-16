@@ -65,10 +65,11 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = None,
-                    metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(10.21),
                     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    principalChargeSubTransaction = "32794239",
+                    principalChargeDocNumber = "372847923",
+                    timeToPay = None
                   ),
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -94,10 +95,11 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = None,
-                    metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(10.21),
                     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    principalChargeSubTransaction = "32794239",
+                    principalChargeDocNumber = "372847923",
+                    timeToPay = None
                   )
                 )
               )
@@ -142,10 +144,11 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                    metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
                     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    principalChargeSubTransaction = "32794239",
+                    principalChargeDocNumber = "372847923",
+                    timeToPay = None
                   ),
                   LPPDetails(
                     penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -171,10 +174,11 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                    metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
                     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    principalChargeSubTransaction = "32794239",
+                    principalChargeDocNumber = "372847923",
+                    timeToPay = None
                   )
                 )
               )
@@ -221,10 +225,11 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(10.22),
                   principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                  vatOutstandingAmount = Some(BigDecimal(123.45))
+                  principalChargeSubTransaction = "32794239",
+                  principalChargeDocNumber = "372847923",
+                  timeToPay = None
                 ),
                 LPPDetails(
                   penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty,
@@ -250,10 +255,11 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = None,
-                  metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(10.21),
                   principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                  vatOutstandingAmount = Some(BigDecimal(123.45))
+                  principalChargeSubTransaction = "32794239",
+                  principalChargeDocNumber = "372847923",
+                  timeToPay = None
                 )
               )
             )
@@ -308,10 +314,11 @@ class APIServiceSpec extends SpecBase {
                   LPP1HRPercentage = None,
                   penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                   principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                  metadata = LPPDetailsMetadata(),
                   penaltyAmountAccruing = BigDecimal(0),
                   principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                  vatOutstandingAmount = Some(BigDecimal(123.45))
+                  principalChargeSubTransaction = "32794239",
+                  principalChargeDocNumber = "372847923",
+                  timeToPay = None
                 )
               )
             )
@@ -390,10 +397,11 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                    metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
                     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    principalChargeSubTransaction = "32794239",
+                    principalChargeDocNumber = "372847923",
+                    timeToPay = None
                   )
                 )
               )
@@ -477,10 +485,11 @@ class APIServiceSpec extends SpecBase {
                     LPP1HRPercentage = None,
                     penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                     principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                    metadata = LPPDetailsMetadata(),
                     penaltyAmountAccruing = BigDecimal(0),
                     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                    vatOutstandingAmount = Some(BigDecimal(123.45))
+                    principalChargeSubTransaction = "32794239",
+                    principalChargeDocNumber = "372847923",
+                    timeToPay = None
                   )
                 )
               )
@@ -535,10 +544,11 @@ class APIServiceSpec extends SpecBase {
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -564,10 +574,11 @@ class APIServiceSpec extends SpecBase {
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               )
             )
           )
@@ -629,10 +640,11 @@ class APIServiceSpec extends SpecBase {
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -658,10 +670,11 @@ class APIServiceSpec extends SpecBase {
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               )
             )
           )
@@ -775,10 +788,11 @@ class APIServiceSpec extends SpecBase {
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               )
             )
           )
@@ -890,10 +904,11 @@ class APIServiceSpec extends SpecBase {
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 1, 1)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(10.21),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               )
             )
           )

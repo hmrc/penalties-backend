@@ -134,17 +134,14 @@ class GetPenaltyDetailsServiceISpec extends IntegrationSpecCommonBase with ETMPW
                 LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(
-                  timeToPay = Some(Seq(TimeToPay(
-                    TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                    TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                  ))),
-                  principalChargeDocNumber = Some("DOC1"),
-                  principalChargeSubTransaction = Some("SUB1")
-                ),
+                timeToPay = Some(Seq(TimeToPay(
+                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+                ))),
+                principalChargeDocNumber = "DOC1",
+                principalChargeSubTransaction = "SUB1",
                 penaltyAmountAccruing = BigDecimal(99.99),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = None
               )
             )
           )

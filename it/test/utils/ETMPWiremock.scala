@@ -103,6 +103,8 @@ trait ETMPWiremock {
       |       "LPP1LRPercentage": 2.00,
       |       "LPP1HRPercentage": 2.00,
       |       "penaltyChargeDueDate": "2022-10-30",
+      |       "principalChargeDocNumber": "DOC1",
+      |       "principalChargeSubTransaction": "SUB1",
       |       "timeToPay": [
       |             {
       |               "TTPStartDate": "2022-01-01",

@@ -70,8 +70,9 @@ class GetPenaltyDetailsParserSpec extends AnyWordSpec with Matchers with LogCapt
     LPP1HRPercentage = None,
     penaltyChargeDueDate = None,
     principalChargeLatestClearing = None,
-    metadata = LPPDetailsMetadata(None),
-    vatOutstandingAmount = Some(BigDecimal(123.45))
+    principalChargeSubTransaction = "32794239",
+    principalChargeDocNumber = "372847923",
+    timeToPay = None
   )
 
   val lpp2Details: LPPDetails = lpp1Details.copy(penaltyCategory = LPPPenaltyCategoryEnum.SecondPenalty, penaltyChargeReference = Some("123456790"), principalChargeLatestClearing = Some(LocalDate.now()))

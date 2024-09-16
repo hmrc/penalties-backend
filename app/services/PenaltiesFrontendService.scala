@@ -151,9 +151,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
           principalChargeBillingFrom = penaltyChargeCreationDate,
           principalChargeBillingTo = penaltyChargeCreationDate,
           principalChargeDueDate = penaltyChargeCreationDate,
-          None, None, None, None, None, None, None, None, None, None, None, None, None, LPPDetailsMetadata(
-            mainTransaction = Some(ManualLPP)
-          )
+          None, None, None, None, None, None, None, None, None, None, None, None, "DOC1", "SUB1", None
         )
       }
     })
@@ -167,7 +165,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
         penaltyDetails.latePaymentPenalty.flatMap(
           _.details.map(
             _.map(
-              penalty => penalty.copy(metadata = penalty.metadata.copy(mainTransaction = Some(penalty.principalChargeMainTransaction)))
+              penalty => penalty
             ) ++ manualLPPAs1812Models
           )
         )
@@ -175,12 +173,7 @@ class PenaltiesFrontendService @Inject()(getFinancialDetailsService: GetFinancia
       penaltyDetails.latePaymentPenalty.flatMap(
         _.details.map(
           _.map(
-            penalty => penalty.copy(metadata = penalty.metadata.copy(
-              mainTransaction = Some(penalty.principalChargeMainTransaction)),
-              vatOutstandingAmount = if(vatAmounts.contains(Some(penalty.principalChargeReference))) {
-                vatAmounts(Some(penalty.principalChargeReference))
-              } else None
-            )
+            penalty => penalty
           ) ++ manualLPPAs1812Models
         )
       )

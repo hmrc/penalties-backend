@@ -47,15 +47,15 @@ trait LPPDetailsBase {
     LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
     penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     principalChargeLatestClearing = None,
-    metadata = LPPDetailsMetadata(
-      timeToPay = Some(Seq(TimeToPay(
+    timeToPay = Some(Seq(TimeToPay(
         TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
         TTPEndDate = Some(LocalDate.of(2022, 12, 31))
       )))
-    ),
+    ,
     penaltyAmountAccruing = BigDecimal(144.21),
     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-    vatOutstandingAmount = Some(BigDecimal(123.45))
+    principalChargeSubTransaction = "SUB1",
+    principalChargeDocNumber = "DOC1"
   )
 
   val lpp2: LPPDetails = LPPDetails(
@@ -82,15 +82,14 @@ trait LPPDetailsBase {
     LPP1HRPercentage = None,
     penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
     principalChargeLatestClearing = None,
-    metadata = LPPDetailsMetadata(
-      timeToPay = Some(Seq(TimeToPay(
+    timeToPay = Some(Seq(TimeToPay(
         TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
         TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-      )))
-    ),
+      ))),
     penaltyAmountAccruing = BigDecimal(144.21),
     principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-    vatOutstandingAmount = Some(BigDecimal(123.45))
+    principalChargeSubTransaction = "SUB1",
+    principalChargeDocNumber = "DOC1"
   )
 
   val lpp1PrincipalChargeDueYesterday: LPPDetails = lpp1PrincipalChargeDueToday.copy(principalChargeDueDate = LocalDate.now().minusDays(1))

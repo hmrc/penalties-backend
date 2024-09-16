@@ -184,6 +184,7 @@ class GetPenaltyDetailsSpec extends SpecBase {
       |   }]
       | },
       | "latePaymentPenalty": {
+      |     "ManualLPPIndicator": false,
       |     "details": [{
       |       "penaltyChargeReference": "1234567890",
       |       "penaltyCategory": "LPP1",
@@ -312,13 +313,11 @@ class GetPenaltyDetailsSpec extends SpecBase {
             LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
             penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
             principalChargeLatestClearing = None,
-            metadata = LPPDetailsMetadata(
-              principalChargeDocNumber = Some("DOC1"),
-              principalChargeSubTransaction = Some("SUB1")
-            ),
+            principalChargeDocNumber = "DOC1",
+            principalChargeSubTransaction = "SUB1",
             penaltyAmountAccruing = BigDecimal(99.99),
             principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-            vatOutstandingAmount = None
+            timeToPay = None
           )
         )
       )

@@ -49,8 +49,9 @@ case class LPPDetails(
                        penaltyChargeDueDate: Option[LocalDate],
                        appealInformation: Option[Seq[AppealInformationType]],
                        principalChargeLatestClearing: Option[LocalDate],
-                       vatOutstandingAmount: Option[BigDecimal],
-                       metadata: LPPDetailsMetadata
+                       principalChargeDocNumber: String,
+                       principalChargeSubTransaction: String,
+                       timeToPay: Option[Seq[TimeToPay]]
                      )
 
 object LPPDetails extends JsonUtils {
@@ -82,8 +83,9 @@ object LPPDetails extends JsonUtils {
         principalChargeLatestClearing <- (json \ "principalChargeLatestClearing").validateOpt[LocalDate]
         penaltyAmountAccruing <- (json \ "penaltyAmountAccruing").validate[BigDecimal]
         principalChargeMainTransaction <- (json \ "principalChargeMainTransaction").validate[MainTransactionEnum.Value]
-        vatOutstandingAmount <- (json \ "vatOutstandingAmount").validateOpt[BigDecimal]
-        metadata <- Json.fromJson(json)(LPPDetailsMetadata.format)
+        principalChargeDocNumber <- (json \ "principalChargeDocNumber").validate[String]
+        principalChargeSubTransaction <- (json \ "principalChargeSubTransaction").validate[String]
+        timeToPay <- (json \ "timeToPay").validateOpt[Seq[TimeToPay]]
       } yield {
         LPPDetails(
           penaltyCategory = penaltyCategory,
@@ -111,8 +113,9 @@ object LPPDetails extends JsonUtils {
           principalChargeDueDate = principalChargeDueDate,
           appealInformation = appealInformation,
           principalChargeLatestClearing = principalChargeLatestClearing,
-          vatOutstandingAmount = vatOutstandingAmount,
-          metadata = metadata
+          principalChargeDocNumber = principalChargeDocNumber,
+          principalChargeSubTransaction = principalChargeSubTransaction,
+          timeToPay = timeToPay
         )
       }
     }
@@ -145,21 +148,10 @@ object LPPDetails extends JsonUtils {
         "principalChargeLatestClearing" -> o.principalChargeLatestClearing,
         "penaltyAmountAccruing" -> o.penaltyAmountAccruing,
         "principalChargeMainTransaction" -> o.principalChargeMainTransaction,
-        "vatOutstandingAmount" -> o.vatOutstandingAmount
-      ).deepMerge(Json.toJsObject(o.metadata)(LPPDetailsMetadata.format))
+        "principalChargeDocNumber" -> o.principalChargeDocNumber,
+        "principalChargeSubTransaction" -> o.principalChargeSubTransaction,
+        "timeToPay" -> o.timeToPay
+      )
     }
   }
-}
-
-case class LPPDetailsMetadata(
-                               mainTransaction: Option[MainTransactionEnum.Value] = None,
-                               timeToPay: Option[Seq[TimeToPay]] = None,
-                               //NOTE: these fields are required in 1812 spec but have been set to optional as they are only used by 3rd party APIs - START
-                               principalChargeDocNumber: Option[String] = None,
-                               principalChargeSubTransaction: Option[String] = None
-                               //END NOTE
-                             )
-
-object LPPDetailsMetadata {
-  implicit val format: OFormat[LPPDetailsMetadata] = Json.format[LPPDetailsMetadata]
 }

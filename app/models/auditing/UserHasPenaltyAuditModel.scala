@@ -142,7 +142,7 @@ case class UserHasPenaltyAuditModel(
     for {
       lpp <- penaltyDetails.latePaymentPenalty
       lppDetails <- lpp.details
-      optSeqTimeToPay <- lppDetails.find(_.metadata.timeToPay.isDefined).map(_.metadata.timeToPay.get)
+      optSeqTimeToPay <- lppDetails.find(_.timeToPay.isDefined).map(_.timeToPay.get)
       optActiveTimeToPay <- optSeqTimeToPay.find(
         penalty => (penalty.TTPEndDate, penalty.TTPStartDate) match {
           case (Some(endDate), Some(startDate)) => DateHelper.isDateAfterOrEqual(dateNow, startDate) && DateHelper.isDateBeforeOrEqual(dateNow, endDate)
