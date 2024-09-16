@@ -99,7 +99,7 @@ class LatePaymentPenaltySpec extends SpecBase {
 
   val jsonRepresentingModel: JsValue = Json.parse(
     """
-      |{
+      |{ "ManualLPPIndicator": false,
       | "details": [{
       |   "penaltyChargeReference": "12345678901235",
       |   "penaltyCategory": "LPP1",
@@ -193,13 +193,11 @@ class LatePaymentPenaltySpec extends SpecBase {
           LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
           penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
           principalChargeLatestClearing = None,
-          metadata = LPPDetailsMetadata(
-            principalChargeDocNumber = Some("DOC1"),
-            principalChargeSubTransaction = Some("SUB1")
-          ),
+          principalChargeDocNumber = "DOC1",
+          principalChargeSubTransaction = "SUB1",
           penaltyAmountAccruing = BigDecimal(144.21),
           principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-          vatOutstandingAmount = None
+          timeToPay = None
         ),
         LPPDetails(
           penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -225,13 +223,11 @@ class LatePaymentPenaltySpec extends SpecBase {
           LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
           penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
           principalChargeLatestClearing = None,
-          metadata = LPPDetailsMetadata(
-            principalChargeDocNumber = Some("DOC1"),
-            principalChargeSubTransaction = Some("SUB1")
-          ),
+          principalChargeDocNumber = "DOC1",
+          principalChargeSubTransaction = "SUB1",
           penaltyAmountAccruing = BigDecimal(144.21),
           principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-          vatOutstandingAmount = None
+          timeToPay = None
         )
       )
     )

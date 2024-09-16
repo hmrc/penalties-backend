@@ -156,15 +156,14 @@ class GetPenaltyDetailsServiceSpec extends SpecBase with LogCapturing with LPPDe
               LPP1HRPercentage = Some(BigDecimal(2.00).setScale(2)),
               penaltyChargeDueDate = Some(LocalDate.of(2022, 10, 30)),
               principalChargeLatestClearing = None,
-              metadata = LPPDetailsMetadata(
-                timeToPay = Some(Seq(TimeToPay(
-                  TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
-                  TTPEndDate = Some(LocalDate.of(2022, 12, 31))
-                )))
-              ),
+              timeToPay = Some(Seq(TimeToPay(
+                TTPStartDate = Some(LocalDate.of(2022, 1, 1)),
+                TTPEndDate = Some(LocalDate.of(2022, 12, 31))
+              ))),
               penaltyAmountAccruing = BigDecimal(144.21),
               principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-              vatOutstandingAmount = Some(BigDecimal(123.45))
+              principalChargeSubTransaction = "32794239",
+              principalChargeDocNumber = "372847923"
             )
           )
         )

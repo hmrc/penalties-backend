@@ -92,7 +92,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |             }
       |          ],
       |          "principalChargeMainTransaction": "4700",
-      |          "penaltyAmountAccruing": 99.99
+      |          "penaltyAmountAccruing": 99.99,
+      |          "penaltyAmountOutstanding": 0,
+      |          "penaltyAmountPaid": 0
       |       }
       |   ]
       | }
@@ -170,7 +172,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |         "principalChargeReference": "XM002610011594",
       |         "principalChargeBillingFrom": "2022-10-30",
       |         "penaltyStatus": "A",
-      |         "mainTransaction": "4703",
       |         "LPP2Percentage": 4,
       |         "LPP1LRCalculationAmount": 99.99,
       |         "principalChargeDocNumber": "DOC1",
@@ -193,43 +194,43 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
     """
       |{
       | "totalisations": {
-      |   "LSPTotalValue": 200,
-      |   "penalisedPrincipalTotal": 2000,
       |   "LPPPostedTotal": 165.25,
       |   "LPPEstimatedTotal": 15.26,
-      |   "totalAccountOverdue": 1000.0,
+      |   "penalisedPrincipalTotal": 2000,
       |   "totalAccountPostedInterest": 12.34,
+      |   "totalAccountOverdue": 1000.0,
+      |   "LSPTotalValue": 200,
       |   "totalAccountAccruingInterest": 43.21
       | },
       | "lateSubmissionPenalty": {
       |   "summary": {
-      |     "activePenaltyPoints": 1,
-      |     "inactivePenaltyPoints": 0,
       |     "regimeThreshold": 5,
-      |     "penaltyChargeAmount": 200.00,
-      |     "PoCAchievementDate": "2022-01-01"
+      |     "inactivePenaltyPoints": 0,
+      |     "activePenaltyPoints": 1,
+      |     "PoCAchievementDate": "2022-01-01",
+      |     "penaltyChargeAmount": 200.00
       |   },
       |   "details": [
       |     {
-      |       "penaltyNumber": "12345678901234",
-      |       "penaltyOrder": "01",
-      |       "penaltyCategory": "P",
-      |       "penaltyStatus": "ACTIVE",
-      |       "penaltyCreationDate": "2022-10-30",
-      |       "penaltyExpiryDate": "2022-10-30",
-      |       "communicationsDate": "2022-10-30",
-      |       "triggeringProcess": "P123",
       |       "lateSubmissions": [
       |         {
-      |           "lateSubmissionID": "001",
-      |           "taxPeriod":  "23AA",
-      |           "taxPeriodStartDate": "2022-01-01",
-      |           "taxPeriodEndDate": "2022-12-31",
       |           "taxPeriodDueDate": "2023-02-07",
+      |           "taxPeriodStartDate": "2022-01-01",
+      |           "taxReturnStatus": "Fulfilled",
       |           "returnReceiptDate": "2023-02-01",
-      |           "taxReturnStatus": "Fulfilled"
+      |           "taxPeriod":  "23AA",
+      |           "taxPeriodEndDate": "2022-12-31",
+      |           "lateSubmissionID": "001"
       |         }
       |       ],
+      |       "penaltyOrder": "01",
+      |       "penaltyCreationDate": "2022-10-30",
+      |       "penaltyCategory": "P",
+      |       "communicationsDate": "2022-10-30",
+      |       "triggeringProcess": "P123",
+      |       "penaltyExpiryDate": "2022-10-30",
+      |       "penaltyStatus": "ACTIVE",
+      |       "penaltyNumber": "12345678901234",
       |       "appealInformation": [
       |         {
       |           "appealStatus": "99",
@@ -241,8 +242,12 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |   ]
       | },
       | "latePaymentPenalty": {
+      |     "ManualLPPIndicator": false,
       |     "details": [
       |       {
+      |         "penaltyCategory": "LPP1",
+      |         "principalChargeReference": "XM002610011594",
+      |         "principalChargeBillingFrom": "2022-10-30",
       |         "principalChargeDueDate": "2022-10-30",
       |         "principalChargeBillingTo": "2022-10-30",
       |         "penaltyAmountPosted": 0,
@@ -254,13 +259,9 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |         "LPP1HRPercentage": 2,
       |         "LPP1LRDays": "15",
       |         "LPP1HRCalculationAmount": 99.99,
-      |         "penaltyCategory": "LPP1",
-      |         "principalChargeReference": "XM002610011594",
-      |         "principalChargeBillingFrom": "2022-10-30",
       |         "principalChargeDocNumber": "DOC1",
       |         "principalChargeSubTransaction": "SUB1",
       |         "penaltyStatus": "A",
-      |         "mainTransaction": "4700",
       |         "LPP2Percentage": 4,
       |         "LPP1LRCalculationAmount": 99.99,
       |         "appealInformation": [
@@ -277,57 +278,59 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |             }
       |         ],
       |         "principalChargeMainTransaction": "4700",
-      |         "penaltyAmountAccruing": 99.99,
-      |         "vatOutstandingAmount": 543.21
+      |         "penaltyAmountAccruing": 99.99
       |       }
       |   ]
       | }
       |}
-      |""".stripMargin)
+      |""".replace("\r", "").stripMargin)
 
   val combinedPenaltyAndFinancialData: JsValue = Json.parse(
     """
       |{
       |    "totalisations": {
-      |        "LSPTotalValue": 200,
-      |        "penalisedPrincipalTotal": 2000,
       |        "LPPPostedTotal": 165.25,
       |        "LPPEstimatedTotal": 15.26,
-      |        "totalAccountOverdue": 1000.0,
+      |        "penalisedPrincipalTotal": 2000,
       |        "totalAccountPostedInterest": 12.34,
+      |        "totalAccountOverdue": 1000.0,
+      |        "LSPTotalValue": 200,
       |        "totalAccountAccruingInterest": 43.21
       |    },
       |    "lateSubmissionPenalty": {
       |        "summary": {
-      |            "activePenaltyPoints": 0,
-      |            "inactivePenaltyPoints": 0,
       |            "regimeThreshold": 5,
-      |            "penaltyChargeAmount": 200,
-      |            "PoCAchievementDate": "2022-01-01"
+      |            "inactivePenaltyPoints": 0,
+      |            "activePenaltyPoints": 0,
+      |            "PoCAchievementDate": "2022-01-01",
+      |            "penaltyChargeAmount": 200
       |        },
       |        "details": []
       |    },
       |    "latePaymentPenalty": {
+      |        "ManualLPPIndicator": false,
       |        "details": [
       |            {
-      |                "principalChargeDueDate": "2022-10-30",
-      |                "principalChargeBillingTo": "2022-10-30",
-      |                "penaltyAmountPosted": 0,
-      |                "LPP1LRPercentage": 2,
-      |                "LPP1HRDays": "31",
-      |                "penaltyChargeDueDate": "2022-10-30",
-      |                "LPP2Days": "31",
-      |                "penaltyChargeCreationDate": "2022-10-30",
-      |                "LPP1HRPercentage": 2,
-      |                "LPP1LRDays": "15",
-      |                "LPP1HRCalculationAmount": 99.99,
       |                "penaltyCategory": "LPP1",
       |                "principalChargeReference": "XM002610011594",
-      |                "principalChargeBillingFrom": "2022-10-30",
+      |                "penaltyChargeCreationDate": "2022-10-30",
       |                "penaltyStatus": "A",
-      |                "mainTransaction": "4700",
-      |                "LPP2Percentage": 4,
+      |                "principalChargeBillingFrom": "2022-10-30",
+      |                "principalChargeBillingTo": "2022-10-30",
+      |                "principalChargeDueDate": "2022-10-30",
+      |                "penaltyAmountOutstanding": 0,
+      |                "penaltyAmountPosted": 0,
+      |                "penaltyAmountPaid": 0,
+      |                "LPP1LRDays": "15",
+      |                "LPP1HRDays": "31",
+      |                "LPP2Days": "31",
+      |                "LPP1HRCalculationAmount": 99.99,
       |                "LPP1LRCalculationAmount": 99.99,
+      |                "LPP2Percentage": 4,
+      |                "LPP1LRPercentage": 2,
+      |                "LPP1HRPercentage": 2,
+      |                "penaltyChargeDueDate": "2022-10-30",
+      |                "penaltyAmountAccruing": 99.99,
       |                "principalChargeMainTransaction": "4700",
       |                "principalChargeDocNumber": "DOC1",
       |                "principalChargeSubTransaction": "SUB1",
@@ -336,9 +339,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |                   "TTPStartDate": "2022-01-01",
       |                   "TTPEndDate": "2022-12-31"
       |                 }
-      |                ],
-      |                "penaltyAmountAccruing": 99.99,
-      |                "vatOutstandingAmount": 543.21
+      |                ]
       |            }
       |        ]
       |    }
@@ -366,6 +367,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |        "details": []
       |    },
       |    "latePaymentPenalty": {
+      |        "ManualLPPIndicator": false,
       |        "details": [
       |            {
       |                "principalChargeDueDate": "2022-10-30",
@@ -383,7 +385,6 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |                "principalChargeReference": "XM002610011594",
       |                "principalChargeBillingFrom": "2022-10-30",
       |                "penaltyStatus": "A",
-      |                "mainTransaction": "4700",
       |                "LPP2Percentage": 4,
       |                "LPP1LRCalculationAmount": 99.99,
       |                "principalChargeMainTransaction": "4700",
@@ -396,7 +397,10 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |                 }
       |                ],
       |                "penaltyAmountAccruing": 99.99,
-      |                "vatOutstandingAmount": 543.21
+      |                "principalChargeDocNumber":"DOC1",
+      |                "principalChargeSubTransaction":"SUB1",
+      |                "penaltyAmountOutstanding": 0,
+      |                "penaltyAmountPaid": 0
       |            }
       |        ]
       |    }
@@ -424,23 +428,25 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
       |        "details": []
       |    },
       |    "latePaymentPenalty": {
-      |        "details": [
-      |            {
-      |               "principalChargeReference" : "PENALTY1234",
-      |		            "penaltyCategory": "MANUAL",
-      |		            "penaltyStatus": "P",
-      |		            "penaltyAmountAccruing": 0,
-      |		            "penaltyAmountPosted": 100.00,
-      |		            "penaltyAmountPaid": 45.00,
-      |		            "penaltyAmountOutstanding": 55.00,
-      |		            "penaltyChargeCreationDate": "2023-04-01",
-      |               "principalChargeDueDate": "2023-04-01",
-      |               "principalChargeBillingTo": "2023-04-01",
-      |               "principalChargeBillingFrom": "2023-04-01",
-      |               "mainTransaction": "4787",
-      |               "principalChargeMainTransaction": "4787"
-      |            }
-      |        ]
+      |         "ManualLPPIndicator": false,
+      |         "details":[
+      |             {
+      |                 "penaltyCategory":"MANUAL",
+      |                 "principalChargeReference":"PENALTY1234",
+      |                 "penaltyChargeCreationDate":"2023-04-01",
+      |                 "penaltyStatus":"P",
+      |                 "principalChargeBillingFrom":"2023-04-01",
+      |                 "principalChargeBillingTo":"2023-04-01",
+      |                 "principalChargeDueDate":"2023-04-01",
+      |                 "penaltyAmountOutstanding":55,
+      |                 "penaltyAmountPosted":100,
+      |                 "penaltyAmountPaid":45,
+      |                 "penaltyAmountAccruing":0,
+      |                 "principalChargeMainTransaction":"4787",
+        |               "principalChargeDocNumber":"DOC1",
+      |                 "principalChargeSubTransaction":"SUB1"
+      |              }
+      |         ]
       |    }
       |}
       |""".stripMargin
@@ -465,6 +471,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
 
         val result = await(buildClientForRequestToApp(uri = etmpUri).get())
         result.status shouldBe OK
+        println("BBBB" + Json.parse(result.body))
         Json.parse(result.body) shouldBe combinedPenaltyAndFinancialData
       }
 
@@ -742,42 +749,44 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
         """
           |{
           |   "totalisations":{
-          |      "LSPTotalValue":200,
-          |      "penalisedPrincipalTotal":2000,
           |      "LPPPostedTotal":165.25,
           |      "LPPEstimatedTotal":15.26,
-          |      "totalAccountOverdue": 1000.0,
+          |      "penalisedPrincipalTotal":2000,
           |      "totalAccountPostedInterest": 12.34,
+          |      "totalAccountOverdue": 1000.0,
+          |      "LSPTotalValue":200,
           |      "totalAccountAccruingInterest": 43.21
           |   },
           |   "lateSubmissionPenalty":{
           |      "summary":{
-          |         "activePenaltyPoints": 1,
-          |         "inactivePenaltyPoints": 0,
           |         "regimeThreshold": 5,
-          |         "penaltyChargeAmount": 200,
-          |         "PoCAchievementDate": "2022-01-01"
+          |         "inactivePenaltyPoints": 0,
+          |         "activePenaltyPoints": 1,
+          |         "PoCAchievementDate": "2022-01-01",
+          |         "penaltyChargeAmount": 200
           |      },
           |      "details":[
           |         {
-          |            "penaltyNumber":"12345678901234",
-          |            "penaltyOrder":"01",
-          |            "penaltyCategory":"P",
-          |            "penaltyStatus":"ACTIVE",
-          |            "penaltyCreationDate":"2022-10-30",
-          |            "penaltyExpiryDate":"2022-10-30",
-          |            "communicationsDate":"2022-10-30",
-          |            "lateSubmissions":[
+          |             "lateSubmissions":[
           |               {
-          |                  "lateSubmissionID": "001",
-          |                  "taxPeriod":  "23AA",
-          |                  "taxPeriodStartDate":"2022-01-01",
-          |                  "taxPeriodEndDate":"2022-12-31",
           |                  "taxPeriodDueDate":"2023-02-07",
+          |                  "taxPeriodStartDate":"2022-01-01",
+          |                  "taxReturnStatus":"Fulfilled",
           |                  "returnReceiptDate":"2023-02-01",
-          |                  "taxReturnStatus":"Fulfilled"
+          |                  "taxPeriod":  "23AA",
+          |                  "taxPeriodEndDate":"2022-12-31",
+          |                  "lateSubmissionID": "001"
           |               }
           |            ],
+          |            "penaltyOrder":"01",
+          |            "penaltyCreationDate":"2022-10-30",
+          |            "penaltyCategory":"P",
+          |            "chargeAmount":200,
+          |            "chargeDueDate":"2022-10-30",
+          |            "communicationsDate":"2022-10-30",
+          |            "triggeringProcess": "P123",
+          |            "penaltyStatus":"ACTIVE",
+          |            "penaltyNumber":"12345678901234",
           |            "appealInformation":[
           |               {
           |                  "appealStatus":"99",
@@ -785,40 +794,21 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |                  "appealDescription": "Some value"
           |               }
           |            ],
-          |            "chargeDueDate":"2022-10-30",
           |            "chargeOutstandingAmount":200,
-          |            "chargeAmount":200,
-          |            "triggeringProcess": "P123",
+          |            "penaltyExpiryDate":"2022-10-30",
           |            "chargeReference": "CHARGEREF1"
           |         }
           |      ]
           |   },
           |   "latePaymentPenalty":{
+          |      "ManualLPPIndicator": false,
           |      "details":[
           |         {
-          |            "principalChargeDueDate":"2022-10-30",
-          |            "principalChargeBillingTo":"2022-10-30",
-          |            "penaltyAmountPosted": 0,
-          |            "LPP1LRPercentage":2,
-          |            "LPP1HRDays":"31",
-          |            "penaltyChargeDueDate":"2022-10-30",
-          |            "communicationsDate":"2022-10-30",
-          |            "LPP2Days":"31",
-          |            "penaltyChargeCreationDate":"2022-10-30",
-          |            "LPP1HRPercentage":2,
-          |            "LPP1LRDays":"15",
-          |            "LPP1HRCalculationAmount":99.99,
-          |            "penaltyChargeReference":"1234567890",
           |            "penaltyCategory":"LPP1",
+          |            "penaltyChargeReference":"1234567890",
           |            "principalChargeReference":"XM002610011594",
+          |            "penaltyChargeCreationDate":"2022-10-30",
           |            "penaltyStatus":"A",
-          |            "penaltyAmountAccruing": 99.99,
-          |            "principalChargeMainTransaction": "4700",
-          |            "principalChargeBillingFrom":"2022-10-30",
-          |            "principalChargeDocNumber": "DOC1",
-          |            "principalChargeSubTransaction": "SUB1",
-          |            "mainTransaction":"4700",
-          |            "LPP2Percentage":4,
           |            "appealInformation":[
           |               {
           |                  "appealStatus":"99",
@@ -826,9 +816,25 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |                  "appealDescription": "Some value"
           |               }
           |            ],
-          |            "LPP1LRCalculationAmount":99.99,
+          |            "principalChargeBillingFrom":"2022-10-30",
+          |            "principalChargeBillingTo":"2022-10-30",
+          |            "principalChargeDueDate":"2022-10-30",
+          |            "communicationsDate":"2022-10-30",
           |            "penaltyAmountOutstanding":0,
-          |            "vatOutstandingAmount": 543.21
+          |            "penaltyAmountPosted": 0,
+          |            "LPP1LRDays":"15",
+          |            "LPP1HRDays":"31",
+          |            "LPP2Days":"31",
+          |            "LPP1HRCalculationAmount":99.99,
+          |            "LPP1LRCalculationAmount":99.99,
+          |            "LPP2Percentage":4,
+          |            "LPP1LRPercentage":2,
+          |            "LPP1HRPercentage":2,
+          |            "penaltyChargeDueDate":"2022-10-30",
+          |            "penaltyAmountAccruing": 99.99,
+          |            "principalChargeMainTransaction": "4700",
+          |            "principalChargeDocNumber": "DOC1",
+          |            "principalChargeSubTransaction": "SUB1"
           |         }
           |      ]
           |   }

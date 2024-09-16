@@ -81,7 +81,7 @@ class APIController @Inject()(auditService: AuditService,
               logger.info(s"[APIController][getSummaryDataForVRN] - 1812 call (VATVC/BTA API) returned 200 for $info")
               val penaltyDetails = success.asInstanceOf[GetPenaltyDetailsSuccessResponse].penaltyDetails
               if (penaltyDetails.latePaymentPenalty.exists(LPP =>
-                LPP.ManualLPPIndicator.getOrElse(false))) {
+                LPP.ManualLPPIndicator)) {
                 logger.info(s"[APIController][getSummaryDataForVRN] - 1812 data has ManualLPPIndicator set to true, calling 1811")
                 callFinancialDetailsForManualLPPs(enrolmentKey).map {
                   financialDetails => {

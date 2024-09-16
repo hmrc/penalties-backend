@@ -364,10 +364,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -393,10 +394,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               )
             )
           )
@@ -436,10 +438,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = None,
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(100),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               ),
               LPPDetails(
                 penaltyCategory = LPPPenaltyCategoryEnum.FirstPenalty,
@@ -465,10 +468,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
                 LPP1HRPercentage = None,
                 penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
                 principalChargeLatestClearing = Some(LocalDate.of(2022, 1, 1)),
-                metadata = LPPDetailsMetadata(),
                 penaltyAmountAccruing = BigDecimal(0),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                vatOutstandingAmount = Some(BigDecimal(123.45))
+                principalChargeSubTransaction = "32794239",
+                principalChargeDocNumber = "372847923",
+                timeToPay = None
               )
             )
           )
@@ -1358,10 +1362,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       LPP1HRPercentage = None,
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
-      metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
       principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-      vatOutstandingAmount = Some(BigDecimal(123.45))
+      principalChargeSubTransaction = "32794239",
+      principalChargeDocNumber = "372847923",
+      timeToPay = None
     )
 
     val sampleLPP2 = LPPDetails(
@@ -1388,10 +1393,11 @@ class AppealsControllerSpec extends SpecBase with FeatureSwitching with LogCaptu
       LPP1HRPercentage = None,
       penaltyChargeDueDate = Some(LocalDate.of(2022, 8, 7)),
       principalChargeLatestClearing = Some(LocalDate.of(2022, 10, 1)),
-      metadata = LPPDetailsMetadata(),
       penaltyAmountAccruing = BigDecimal(0),
       principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-      vatOutstandingAmount = Some(BigDecimal(123.45))
+      principalChargeSubTransaction = "32794239",
+      principalChargeDocNumber = "372847923",
+      timeToPay = None
     )
 
     val getPenaltyDetailsOnePenalty: GetPenaltyDetails = GetPenaltyDetails(
