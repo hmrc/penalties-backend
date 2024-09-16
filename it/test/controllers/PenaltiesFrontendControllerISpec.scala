@@ -801,6 +801,7 @@ class PenaltiesFrontendControllerISpec extends IntegrationSpecCommonBase with ET
           |      ]
           |   },
           |   "latePaymentPenalty":{
+          |      "ManualLPPIndicator": false,
           |      "details":[
           |         {
           |            "principalChargeDueDate":"2022-10-30",

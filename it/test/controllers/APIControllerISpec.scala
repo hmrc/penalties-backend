@@ -74,7 +74,9 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "principalChargeBillingFrom": "2022-10-30",
         |          "principalChargeBillingTo": "2022-10-30",
         |          "principalChargeMainTransaction": "4700",
-        |          "principalChargeDueDate": "2022-10-30"
+        |          "principalChargeDueDate": "2022-10-30",
+        |          "principalChargeDocNumber": "DOC1",
+        |          "principalChargeSubTransaction": "SUB1"
         |       },
         |       {
         |          "penaltyCategory": "LPP2",
@@ -98,7 +100,9 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "principalChargeBillingFrom": "2022-10-30",
         |          "principalChargeBillingTo": "2022-10-30",
         |          "principalChargeMainTransaction": "4700",
-        |          "principalChargeDueDate": "2022-10-30"
+        |          "principalChargeDueDate": "2022-10-30",
+        |          "principalChargeDocNumber": "DOC1",
+        |          "principalChargeSubTransaction": "SUB1"
         |       },
         |       {
         |          "penaltyCategory": "LPP1",
@@ -124,7 +128,9 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "principalChargeBillingFrom": "2022-10-30",
         |          "principalChargeBillingTo": "2022-10-30",
         |          "principalChargeMainTransaction": "4700",
-        |          "principalChargeDueDate": "2022-10-30"
+        |          "principalChargeDueDate": "2022-10-30",
+        |          "principalChargeDocNumber": "DOC1",
+        |          "principalChargeSubTransaction": "SUB1"
         |       },
         |       {
         |          "penaltyCategory": "LPP1",
@@ -150,7 +156,9 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
         |          "principalChargeBillingFrom": "2022-10-30",
         |          "principalChargeBillingTo": "2022-10-30",
         |          "principalChargeMainTransaction": "4700",
-        |          "principalChargeDueDate": "2022-10-30"
+        |          "principalChargeDueDate": "2022-10-30",
+        |          "principalChargeDocNumber": "DOC1",
+        |          "principalChargeSubTransaction": "SUB1"
         |       }
         |   ]
         | }
@@ -399,34 +407,34 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
                 | },
                 | "lateSubmissionPenalty": {
                 |   "summary": {
-                |     "activePenaltyPoints": 10,
-                |     "inactivePenaltyPoints": 12,
                 |     "regimeThreshold": 10,
-                |     "penaltyChargeAmount": 684.25,
-                |     "PoCAchievementDate": "2022-10-30"
+                |     "inactivePenaltyPoints": 12,
+                |     "activePenaltyPoints": 10,
+                |     "PoCAchievementDate": "2022-10-30",
+                |     "penaltyChargeAmount": 684.25
                 |   },
                 |   "details": [
-                |     {
-                |       "penaltyNumber": "12345678901234",
-                |       "penaltyOrder": "01",
-                |       "penaltyCategory": "P",
-                |       "penaltyStatus": "ACTIVE",
-                |       "penaltyCreationDate": "2022-10-30",
-                |       "penaltyExpiryDate": "2022-10-30",
-                |       "communicationsDate": "2022-10-30",
-                |       "FAPIndicator": "X",
-                |       "lateSubmissions": [
-                |         {
-                |           "lateSubmissionID": "001",
-                |           "taxPeriod":  "23AA",
-                |           "taxPeriodStartDate": "2022-01-01",
-                |           "taxPeriodEndDate": "2022-12-31",
-                |           "taxPeriodDueDate": "2023-02-07",
-                |           "returnReceiptDate": "2023-02-01",
-                |           "taxReturnStatus": "Fulfilled"
+                |       {
+                |              "lateSubmissions": [
+                |                     {
+                |                               "taxPeriodDueDate": "2023-02-07",
+                |                               "taxPeriodStartDate": "2022-01-01",
+                |                               "taxReturnStatus": "Fulfilled",
+                |                               "returnReceiptDate": "2023-02-01",
+                |                               "taxPeriod":  "23AA",
+                |                               "taxPeriodEndDate": "2022-12-31",
+                |                               "lateSubmissionID": "001"
                 |         }
                 |       ],
-                |       "expiryReason": "FAP",
+                |       "penaltyOrder": "01",
+                |       "penaltyCreationDate": "2022-10-30",
+                |       "penaltyCategory": "P",
+                |       "chargeDueDate": "2022-10-30",
+                |       "communicationsDate": "2022-10-30",
+                |       "triggeringProcess": "P123",
+                |       "FAPIndicator": "X",
+                |       "penaltyStatus": "ACTIVE",
+                |       "penaltyNumber": "12345678901234",
                 |       "appealInformation": [
                 |         {
                 |           "appealStatus": "99",
@@ -434,14 +442,15 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
                 |           "appealDescription": "Some value"
                 |         }
                 |       ],
-                |       "chargeDueDate": "2022-10-30",
                 |       "chargeOutstandingAmount": 200,
                 |       "chargeAmount": 200,
-                |       "triggeringProcess": "P123",
+                |       "expiryReason": "FAP",
+                |       "penaltyExpiryDate": "2022-10-30",
                 |       "chargeReference": "CHARGEREF1"
                 |   }]
                 | },
                 | "latePaymentPenalty": {
+                |     "ManualLPPIndicator": false,
                 |     "details": [{
                 |       "penaltyCategory": "LPP1",
                 |       "penaltyChargeReference": "1234567890",
@@ -457,14 +466,10 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
                 |       "principalChargeBillingFrom": "2022-10-30",
                 |       "principalChargeBillingTo": "2022-10-30",
                 |       "principalChargeDueDate": "2022-10-30",
-                |       "principalChargeDocNumber": "DOC1",
-                |       "principalChargeSubTransaction": "SUB1",
                 |       "communicationsDate": "2022-10-30",
-                |       "penaltyAmountAccruing": 1001.45,
-                |       "principalChargeMainTransaction" : "4700",
                 |       "penaltyAmountOutstanding": 0,
-                |       "penaltyAmountPaid": 0,
                 |       "penaltyAmountPosted": 0,
+                |       "penaltyAmountPaid": 0,
                 |       "LPP1LRDays": "15",
                 |       "LPP1HRDays": "31",
                 |       "LPP2Days": "31",
@@ -473,7 +478,11 @@ class APIControllerISpec extends IntegrationSpecCommonBase with ETMPWiremock wit
                 |       "LPP2Percentage": 4.00,
                 |       "LPP1LRPercentage": 2.00,
                 |       "LPP1HRPercentage": 2.00,
-                |       "penaltyChargeDueDate": "2022-10-30"
+                |       "penaltyChargeDueDate": "2022-10-30",
+                |       "penaltyAmountAccruing": 1001.45,
+                |       "principalChargeMainTransaction" : "4700",
+                |       "principalChargeDocNumber": "DOC1",
+                |       "principalChargeSubTransaction": "SUB1"
                 |   }]
                 | }
                 |}
