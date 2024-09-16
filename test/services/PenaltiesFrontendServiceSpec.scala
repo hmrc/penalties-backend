@@ -68,7 +68,7 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
     principalChargeBillingFrom = LocalDate.of(2023, 4, 1),
     principalChargeBillingTo = LocalDate.of(2023, 4, 1),
     principalChargeDueDate = LocalDate.of(2023, 4, 1),
-    None, None, None, None, None, None, None, None, None, None, None, None, "4235435", "324325", None
+    None, None, None, None, None, None, None, None, None, None, None, None, "DOC1", "SUB1", None
   )
 
   val getPenaltyDetails: GetPenaltyDetails = GetPenaltyDetails(
@@ -312,8 +312,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                   principalChargeLatestClearing = None,
                   penaltyAmountAccruing = BigDecimal(99.9),
                   principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                  principalChargeSubTransaction = "32794239",
-                  principalChargeDocNumber = "372847923",
+                  principalChargeSubTransaction = "SUB1",
+                  principalChargeDocNumber = "DOC1",
                   timeToPay = None
                 ),
                 LPPDetails(
@@ -342,8 +342,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                   principalChargeLatestClearing = None,
                   penaltyAmountAccruing = BigDecimal(99.9),
                   principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                  principalChargeSubTransaction = "32794239",
-                  principalChargeDocNumber = "372847923",
+                  principalChargeSubTransaction = "SUB1",
+                  principalChargeDocNumber = "DOC1",
                   timeToPay = None
                 )
               )
@@ -405,8 +405,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 penaltyAmountAccruing = BigDecimal(99.9),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                principalChargeSubTransaction = "32794239",
-                principalChargeDocNumber = "372847923",
+                principalChargeSubTransaction = "SUB1",
+                principalChargeDocNumber = "DOC1",
                 timeToPay = None
               ),
               LPPDetails(
@@ -435,8 +435,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 penaltyAmountAccruing = BigDecimal(99.9),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                principalChargeSubTransaction = "32794239",
-                principalChargeDocNumber = "372847923",
+                principalChargeSubTransaction = "SUB1",
+                principalChargeDocNumber = "DOC1",
                 timeToPay = None
               ),
               manualLPP
@@ -481,8 +481,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 penaltyAmountAccruing = BigDecimal(99.9),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                principalChargeSubTransaction = "32794239",
-                principalChargeDocNumber = "372847923",
+                principalChargeSubTransaction = "SUB1",
+                principalChargeDocNumber = "DOC1",
                 timeToPay = None
               ),
               LPPDetails(
@@ -511,8 +511,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 penaltyAmountAccruing = BigDecimal(99.9),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                principalChargeSubTransaction = "32794239",
-                principalChargeDocNumber = "372847923",
+                principalChargeSubTransaction = "SUB1",
+                principalChargeDocNumber = "DOC1",
                 timeToPay = None
               )
             )
@@ -574,8 +574,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               principalChargeLatestClearing = None,
               penaltyAmountAccruing = BigDecimal(99.9),
               principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-              principalChargeSubTransaction = "32794239",
-              principalChargeDocNumber = "372847923",
+              principalChargeSubTransaction = "SUB1",
+              principalChargeDocNumber = "DOC1",
               timeToPay = None
             ),
             LPPDetails(
@@ -604,8 +604,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               principalChargeLatestClearing = None,
               penaltyAmountAccruing = BigDecimal(99.9),
               principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-              principalChargeSubTransaction = "32794239",
-              principalChargeDocNumber = "372847923",
+              principalChargeSubTransaction = "SUB1",
+              principalChargeDocNumber = "DOC1",
               timeToPay = None
             ),
             manualLPP.copy(penaltyAmountPaid = Some(0), penaltyAmountOutstanding = Some(BigDecimal(100)))
@@ -650,8 +650,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
                 principalChargeLatestClearing = None,
                 penaltyAmountAccruing = BigDecimal(99.9),
                 principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-                principalChargeSubTransaction = "32794239",
-                principalChargeDocNumber = "372847923",
+                principalChargeSubTransaction = "SUB1",
+                principalChargeDocNumber = "DOC1",
                 timeToPay = None
               )
             )
@@ -701,8 +701,8 @@ class PenaltiesFrontendServiceSpec extends SpecBase with LogCapturing with LPPDe
               principalChargeLatestClearing = None,
               penaltyAmountAccruing = BigDecimal(99.9),
               principalChargeMainTransaction = MainTransactionEnum.VATReturnCharge,
-              principalChargeSubTransaction = "32794239",
-              principalChargeDocNumber = "372847923",
+              principalChargeSubTransaction = "SUB1",
+              principalChargeDocNumber = "DOC1",
               timeToPay = None
             )
           )
